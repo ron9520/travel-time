@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Time – הדרך לחופשה המושלמת | אסף דנגור</title>
+  <meta name="description" content="חבילות חופשה וטיסות לכל יעד בעולם. שירות אישי, מחירים תחרותיים, ליווי צמוד 24/6. צרו קשר עם אסף דנגור." />
+  <meta name="keywords" content="חבילות חופשה, טיסות, תיירות, travel time, אסף דנגור, דילים, נסיעות לחו״ל" />
+  <!-- Open Graph – לשיתוף יפה בוואטסאפ ופייסבוק -->
+  <meta property="og:title" content="Travel Time – הדרך לחופשה המושלמת" />
+  <meta property="og:description" content="חבילות חופשה וטיסות לכל יעד בעולם. שירות אישי ומחירים תחרותיים. זמינות 24/6." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&q=80" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="he_IL" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: #fff;
+      color: #1a2a3a;
+      direction: rtl;
+      overflow-x: hidden;
+    }
+
+    /* ===== COLORS ===== */
+    :root {
+      --navy:    #1a3560;
+      --blue:    #2563a8;
+      --sky:     #4a9fd4;
+      --light:   #e8f4fb;
+      --gold:    #e8a020;
+      --white:   #ffffff;
+      --gray:    #f5f8fa;
+      --text:    #1a2a3a;
+      --muted:   #667788;
+    }
+
+    /* ===== NAVBAR ===== */
+    nav {
+      position: fixed;
+      top: 0; right: 0; left: 0;
+      z-index: 100;
+      background: rgba(26,53,96,0.96);
+      backdrop-filter: blur(8px);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      text-decoration: none;
+    }
+    .nav-logo svg { height: 42px; width: 42px; }
+    .nav-logo-text { line-height: 1.1; }
+    .nav-logo-text .brand { font-size: 1.1rem; font-weight: 800; color: #fff; letter-spacing: 1px; }
+    .nav-logo-text .sub   { font-size: 0.65rem; color: var(--sky); font-weight: 400; }
+    .nav-cta {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    .nav-cta a {
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.45rem 1.2rem;
+      border-radius: 50px;
+      transition: all 0.2s;
+    }
+    .btn-call {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    .btn-call:hover { background: #f5b030; transform: translateY(-1px); }
+    .btn-contact {
+      border: 1.5px solid rgba(255,255,255,0.5);
+      color: #fff;
+    }
+    .btn-contact:hover { background: rgba(255,255,255,0.15); }
+
+    /* ===== HERO ===== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      text-align: center;
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(160deg, rgba(26,53,96,0.85) 0%, rgba(37,99,168,0.7) 50%, rgba(74,159,212,0.5) 100%),
+        url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1800&q=80') center/cover no-repeat;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 750px;
+      padding: 1rem 2rem;
+      animation: fadeUp 0.9s ease both;
+    }
+    .hero-logo {
+      margin: 0 auto 1.5rem;
+      width: 140px;
+      height: 140px;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.4));
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    }
+    .hero h1 span { color: var(--gold); }
+    .hero .tagline {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: rgba(255,255,255,0.88);
+      margin-bottom: 0.5rem;
+      font-weight: 400;
+    }
+    .hero .availability {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 50px;
+      padding: 0.3rem 1rem;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 0.8rem;
+      backdrop-filter: blur(4px);
+    }
+    .availability-dot {
+      width: 8px; height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse-green 1.5s infinite;
+    }
+    @keyframes pulse-green {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.6; transform: scale(1.3); }
+    }
+    .hero .by-line {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 2.2rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 2.2rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s;
+      font-family: 'Heebo', sans-serif;
+    }
+    .hero-btn.primary {
+      background: var(--gold);
+      color: var(--navy);
+      box-shadow: 0 4px 20px rgba(232,160,32,0.45);
+    }
+    .hero-btn.primary:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(232,160,32,0.55); }
+    .hero-btn.secondary {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.5);
+      backdrop-filter: blur(4px);
+    }
+    .hero-btn.secondary:hover { background: rgba(255,255,255,0.25); transform: translateY(-3px); }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.75rem;
+      animation: bounce 2s infinite;
+    }
+    .hero-scroll svg { width: 20px; height: 20px; }
+
+    /* ===== SECTION BASE ===== */
+    section { padding: 90px 1.5rem; }
+    .section-title {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .section-title h2 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .section-title p {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .divider {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--sky));
+      border-radius: 2px;
+      margin: 0.75rem auto 1rem;
+    }
+
+    /* ===== WHY ASSAF ===== */
+    .why { background: var(--gray); }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .why-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(26,53,96,0.08);
+      transition: transform 0.25s, box-shadow 0.25s;
+    }
+    .why-card:hover { transform: translateY(-6px); box-shadow: 0 12px 36px rgba(26,53,96,0.15); }
+    .why-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--blue), var(--sky));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.2rem;
+      font-size: 1.7rem;
+    }
+    .why-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+    .why-card p  { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+    /* ===== GALLERY ===== */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .gallery-item {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      cursor: pointer;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    .gallery-item:hover img { transform: scale(1.07); }
+    .gallery-item { cursor: pointer; }
+    .gallery-label {
+      position: absolute;
+      bottom: 0; right: 0; left: 0;
+      background: linear-gradient(to top, rgba(26,53,96,0.85), transparent);
+      color: #fff;
+      padding: 1rem 1rem 0.8rem;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: opacity 0.3s;
+    }
+    .gallery-pick {
+      position: absolute;
+      inset: 0;
+      background: rgba(26,53,96,0.75);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 0.25s;
+      backdrop-filter: blur(2px);
+    }
+    .gallery-item:hover .gallery-pick { opacity: 1; }
+    .gallery-item:hover .gallery-label { opacity: 0; }
+    .gallery-item:active { transform: scale(0.97); }
+
+    /* ===== TESTIMONIALS ===== */
+    .testimonials { background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%); }
+    .testimonials .section-title h2 { color: #fff; }
+    .testimonials .section-title p  { color: rgba(255,255,255,0.75); }
+    .testimonials .divider { background: linear-gradient(90deg, var(--gold), #f5c84a); }
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .testimonial-card {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      padding: 1.8rem;
+      backdrop-filter: blur(6px);
+      transition: transform 0.25s;
+    }
+    .testimonial-card:hover { transform: translateY(-4px); }
+    .stars { color: var(--gold); font-size: 1.1rem; margin-bottom: 0.8rem; letter-spacing: 2px; }
+    .testimonial-text { color: rgba(255,255,255,0.9); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.2rem; }
+    .testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
+    .avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--sky), var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; color: #fff; font-size: 1rem;
+    }
+    .author-name  { font-weight: 700; color: #fff;  font-size: 0.9rem; }
+    .author-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+
+    /* ===== CONTACT FORM ===== */
+    .contact { background: var(--gray); }
+    .contact-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 8px 40px rgba(26,53,96,0.12);
+    }
+    .contact-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .contact-header h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 0.4rem;
+    }
+    .contact-header p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      border: 1.5px solid #dce5ef;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-family: 'Heebo', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: #fafcfe;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      direction: rtl;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,168,0.12);
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-full { grid-column: 1 / -1; }
+    .form-submit {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Heebo', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s;
+      letter-spacing: 0.5px;
+    }
+    .form-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,53,96,0.3); }
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      color: var(--blue);
+    }
+    .form-success .check { font-size: 3rem; margin-bottom: 0.8rem; }
+    .form-success h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .form-success p { color: var(--muted); }
+
+    /* WhatsApp join banner */
+    .whatsapp-banner {
+      background: linear-gradient(135deg, #075e54, #128c7e);
+      padding: 1.4rem 2rem;
+      text-align: center;
+    }
+    .whatsapp-banner p {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.9rem;
+      margin-bottom: 0.7rem;
+    }
+    .whatsapp-banner a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: #25d366;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.7rem 2rem;
+      border-radius: 50px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.4);
+    }
+    .whatsapp-banner a:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,211,102,0.5); }
+
+    /* direct call strip */
+    .call-strip {
+      background: linear-gradient(90deg, var(--navy), var(--blue));
+      padding: 1.2rem 2rem;
+      text-align: center;
+    }
+    .call-strip a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.6rem 2rem;
+      border: 2px solid var(--gold);
+      border-radius: 50px;
+      transition: all 0.2s;
+    }
+    .call-strip a:hover { background: var(--gold); color: var(--navy); }
+    .call-strip p { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 0.6rem; }
+
+    /* ===== STATS ===== */
+    .stats {
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      padding: 60px 1.5rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .stat-item { padding: 1rem; }
+    .stat-number {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+      font-weight: 500;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: #0f2040;
+      color: rgba(255,255,255,0.75);
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .footer-logo { margin: 0 auto 0.8rem; }
+    .footer-logo svg { height: 52px; width: 52px; }
+    .footer-brand { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .footer-tagline { font-size: 0.8rem; color: var(--sky); margin-bottom: 1.2rem; }
+    .footer-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .footer-links a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--sky); }
+    .footer-copy { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50%       { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ===== FLOATING WHATSAPP ===== */
+  /* buttons are inline-styled in HTML */
+
+  /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .nav-cta .btn-contact { display: none; }
+      nav { padding: 0 1rem; }
+      section { padding: 70px 1rem; }
+      .contact-wrapper { padding: 1.8rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav>
+  <a href="#" class="nav-logo">
+    <!-- Logo SVG inspired by Travel Time -->
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#4a9fd4"/>
+          <stop offset="100%" style="stop-color:#1a3560"/>
+        </linearGradient>
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#87ceeb"/>
+          <stop offset="100%" style="stop-color:#4a9fd4"/>
+        </linearGradient>
+      </defs>
+      <!-- Outer ring -->
+      <ellipse cx="50" cy="52" rx="40" ry="46" fill="none" stroke="#2563a8" stroke-width="4"/>
+      <!-- Sky bg -->
+      <ellipse cx="50" cy="52" rx="36" ry="42" fill="url(#skyGrad)"/>
+      <!-- Mountains -->
+      <polygon points="18,74 36,44 52,62 64,46 82,74" fill="#1a3560"/>
+      <polygon points="18,74 36,50 50,68" fill="#2563a8"/>
+      <!-- Orbit ring -->
+      <ellipse cx="50" cy="40" rx="46" ry="16" fill="none" stroke="#2563a8" stroke-width="3" transform="rotate(-20 50 40)"/>
+      <!-- Plane -->
+      <g transform="translate(12,22) rotate(-30)">
+        <path d="M0,4 L16,0 L20,4 L16,8 Z" fill="white"/>
+        <path d="M6,4 L10,0 L12,4 L10,8 Z" fill="#cde"/>
+        <path d="M14,2 L18,-2 L19,0 L15,4 Z" fill="white"/>
+      </g>
+    </svg>
+    <div class="nav-logo-text">
+      <div class="brand">TRAVEL TIME</div>
+      <div class="sub">הדרך לחופשה המושלמת</div>
+    </div>
+  </a>
+  <div class="nav-cta">
+    <a href="#contact" class="nav-cta btn-contact">השאר פרטים</a>
+    <a href="tel:0542310016" class="nav-cta btn-call">📞 חייג עכשיו</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <!-- Logo mark -->
+    <svg class="hero-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="heroSky" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#a8d8f0"/>
+          <stop offset="100%" style="stop-color:#4a9fd4"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="50" cy="52" rx="42" ry="48" fill="none" stroke="white" stroke-width="3" opacity="0.8"/>
+      <ellipse cx="50" cy="52" rx="37" ry="43" fill="url(#heroSky)" opacity="0.9"/>
+      <polygon points="15,76 35,42 52,62 66,44 85,76" fill="#1a3560" opacity="0.95"/>
+      <polygon points="15,76 35,48 50,68" fill="#2563a8"/>
+      <ellipse cx="50" cy="38" rx="48" ry="17" fill="none" stroke="white" stroke-width="2.5" transform="rotate(-18 50 38)" opacity="0.9"/>
+      <g transform="translate(8,18) rotate(-28)">
+        <path d="M0,5 L18,0 L23,5 L18,10 Z" fill="white"/>
+        <path d="M15,2 L20,-3 L22,1 L17,5 Z" fill="white" opacity="0.8"/>
+      </g>
+    </svg>
+
+    <h1>הדרך ל<span>חופשה המושלמת</span><br/>מתחילה כאן</h1>
+    <p class="tagline">חבילות טיסה ונופש מותאמות אישית לכל יעד בעולם 🌍</p>
+    <div class="availability"><span class="availability-dot"></span> זמינות 24/6 💫</div>
+    <p class="by-line">by Assaf Dangur</p>
+    <div class="hero-buttons">
+      <a href="tel:0542310016" class="hero-btn primary">📞 דבר עם אסף עכשיו</a>
+      <a href="#contact" class="hero-btn secondary">השאר פרטים לחזרה</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>גלול למטה</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M5 12l7 7 7-7"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-number" data-target="200">0</div>
+      <div class="stat-label">לקוחות מרוצים +</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-target="30">0</div>
+      <div class="stat-label">יעדים בעולם +</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-target="3">0</div>
+      <div class="stat-label">שנות ניסיון</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number">24/6</div>
+      <div class="stat-label">זמינות</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY ASSAF ===== -->
+<section class="why" id="why">
+  <div class="section-title">
+    <h2>למה אסף?</h2>
+    <div class="divider"></div>
+    <p>כי אנחנו לא מוכרים חבילות – אנחנו בונים חוויות. עם ניסיון, אמינות ושירות אישי שתרגישו בכל שלב של הדרך.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon">🤝</div>
+      <h3>ליווי צמוד ואישי</h3>
+      <p>מרגע הזמנת הכרטיסים ועד שתחזרו הביתה – אסף לצדכם בכל שלב. לא בוט, לא תור. אדם אמיתי.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">⏰</div>
+      <h3>זמינות 24/6 💫</h3>
+      <p>בטיול, לפני, אחרי – אסף זמין לכל שאלה ובעיה. כי בחופשה לא אמורים לדאוג לשום דבר.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">💰</div>
+      <h3>מחיר פצצה</h3>
+      <p>גישה ישירה לדילים שלא תמצאו לבד. המלון הכי שווה, הטיסה הכי משתלמת – בלי עלויות מיותרות.</p>
+    </div>
+    <div class="why-card">
+      <div class="why-icon">🌍</div>
+      <h3>כל יעד בעולם</h3>
+      <p>זוגות, משפחות, חברים, קבוצות – לתיירות אין גיל ואין גבול. לאן שאתם חולמים, אסף יוביל אתכם.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GALLERY ===== -->
+<section id="destinations">
+  <div class="section-title">
+    <h2>לאן תרצה לטוס?</h2>
+    <div class="divider"></div>
+    <p>העולם מלא ביעדים מדהימים – ואנחנו כאן כדי לקחת אותך לשם</p>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item" onclick="selectDestination('פריז, צרפת')" title="לחץ לבחירת יעד">
+      <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80" alt="פריז" loading="lazy"/>
+      <div class="gallery-label">פריז, צרפת 🇫🇷</div>
+      <div class="gallery-pick">בחר יעד זה ✈️</div>
+    </div>
+    <div class="gallery-item" onclick="selectDestination('באלי, אינדונזיה')" title="לחץ לבחירת יעד">
+      <img src="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80" alt="באלי" loading="lazy"/>
+      <div class="gallery-label">באלי, אינדונזיה 🇮🇩</div>
+      <div class="gallery-pick">בחר יעד זה ✈️</div>
+    </div>
+    <div class="gallery-item" onclick="selectDestination('סנטוריני, יוון')" title="לחץ לבחירת יעד">
+      <img src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=600&q=80" alt="סנטוריני" loading="lazy"/>
+      <div class="gallery-label">סנטוריני, יוון 🇬🇷</div>
+      <div class="gallery-pick">בחר יעד זה ✈️</div>
+    </div>
+    <div class="gallery-item" onclick="selectDestination('דובאי, איחוד האמירויות')" title="לחץ לבחירת יעד">
+      <img src="https://images.unsplash.com/photo-1538332576228-eb5b4c4de6f5?w=600&q=80" alt="דובאי" loading="lazy"/>
+      <div class="gallery-label">דובאי, איחוד האמירויות 🇦🇪</div>
+      <div class="gallery-pick">בחר יעד זה ✈️</div>
+    </div>
+    <div class="gallery-item" onclick="selectDestination('מלדיביים')" title="לחץ לבחירת יעד">
+      <img src="https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=600&q=80" alt="מלדיביים" loading="lazy"/>
+      <div class="gallery-label">מלדיביים 🏝️</div>
+      <div class="gallery-pick">בחר יעד זה ✈️</div>
+    </div>
+    <div class="gallery-item" onclick="selectDestination('ניו יורק, ארה״ב')" title="לחץ לבחירת יעד">
+      <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600&q=80" alt="ניו יורק" loading="lazy"/>
+      <div class="gallery-label">ניו יורק, ארה"ב 🇺🇸</div>
+      <div class="gallery-pick">בחר יעד זה ✈️</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="testimonials" id="testimonials">
+  <div class="section-title">
+    <h2>מה הלקוחות אומרים</h2>
+    <div class="divider"></div>
+    <p>אלפי נוסעים כבר בחרו ב-Travel Time – הנה מה שיש להם להגיד</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">״אסף..באמת אין לי מילים כמה היית כאן בשבילנו...אין מילים....תודה תודה ובטוחה שנדע בפעמים הבאות לטוס דרכך...תודה״</p>
+      <div class="testimonial-author">
+        <div class="avatar">ל</div>
+        <div>
+          <div class="author-name">לקוחה מרוצה</div>
+          <div class="author-label">✓ אומת דרך וואטסאפ</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">״השירות 10! הטיסות בסדר גמור, הם נדיבים ונעימים. המלון המיקום – מהמם! והמחיר פצצה. אתה אסף – סוכן יותר ממושלם! תודה לך 🏆״</p>
+      <div class="testimonial-author">
+        <div class="avatar">ל</div>
+        <div>
+          <div class="author-name">לקוחה מרוצה</div>
+          <div class="author-label">✓ אומת דרך וואטסאפ</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">״הדרך לחופשה מוצלחת וליווי מפנק רק עם אסף. טיפול אמין ומהימן, ליווי צמוד ואישי, זמינות 24/6. אסף בשטח – אין סיבה למתח!״</p>
+      <div class="testimonial-author">
+        <div class="avatar">כ</div>
+        <div>
+          <div class="author-name">כרמלה</div>
+          <div class="author-label">✓ ממליצה בפייסבוק</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">״זו הפעם הראשונה שסגרתי דרך סוכן – ואסף, תודה על הדיל הכי שווה שיש! היית זמין בכל שאלה ובעיה. אלוף אתה ותודה על חופשה מושלמת והכי משתלמת שיש 😘״</p>
+      <div class="testimonial-author">
+        <div class="avatar">מ</div>
+        <div>
+          <div class="author-name">מירב אברהם</div>
+          <div class="author-label">✓ ביקורת מאומתת בפייסבוק</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHATSAPP BANNER ===== -->
+<div class="whatsapp-banner">
+  <p>🔥 רוצה לקבל דילים בלעדיים לפני כולם? הצטרף לקבוצת הוואטסאפ של Travel Time!</p>
+  <a href="https://chat.whatsapp.com/C9LR8NQRCMA5F27Kwyy3dK" target="_blank" rel="noopener">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    הצטרף לקבוצת הדילים
+  </a>
+</div>
+
+<!-- ===== CALL STRIP ===== -->
+<div class="call-strip">
+  <p>מעדיפים לדבר ישירות? אסף זמין בטלפון</p>
+  <a href="tel:0542310016">
+    <span>📞</span>
+    <span>054-231-0016</span>
+  </a>
+</div>
+
+<!-- ===== CONTACT FORM ===== -->
+<section class="contact" id="contact">
+  <div class="contact-wrapper">
+    <div class="contact-header">
+      <h2>📋 השאר פרטים לחזרה</h2>
+      <p>ממלאים את הטופס ואסף חוזר אליכם בהקדם עם הצעה מותאמת אישית</p>
+    </div>
+    <form id="contactForm" onsubmit="submitForm(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">שם מלא *</label>
+          <input type="text" id="name" placeholder="ישראל ישראלי" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">מספר טלפון *</label>
+          <input type="tel" id="phone" placeholder="050-000-0000" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="destination">יעד מועדף</label>
+          <input type="text" id="destination" placeholder="לדוגמה: יוון, תאילנד..." />
+        </div>
+        <div class="form-group">
+          <label for="timing">מתי נוח לחזור אליך?</label>
+          <select id="timing">
+            <option value="">בחר שעה</option>
+            <option>בוקר (9:00–12:00)</option>
+            <option>צהריים (12:00–15:00)</option>
+            <option>אחה"צ (15:00–18:00)</option>
+            <option>ערב (18:00–21:00)</option>
+            <option>בכל שעה</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group form-full">
+          <label for="message">הערות / פרטים נוספים</label>
+          <textarea id="message" placeholder="ספר לנו קצת – כמה נוסעים? תאריכים מועדפים? תקציב?"></textarea>
+        </div>
+      </div>
+      <button type="submit" class="form-submit">שלח בקשה לחזרה ✈️</button>
+    </form>
+    <div class="form-success" id="formSuccess">
+      <div class="check">✅</div>
+      <h3>קיבלנו את הפרטים שלך!</h3>
+      <p>אסף יצור איתך קשר בהקדם האפשרי.<br/>תודה שבחרת ב-Travel Time 🌍</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-logo">
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="52" rx="40" ry="46" fill="none" stroke="#4a9fd4" stroke-width="3"/>
+      <ellipse cx="50" cy="52" rx="35" ry="41" fill="#2563a8" opacity="0.4"/>
+      <polygon points="16,74 35,44 52,62 64,46 84,74" fill="#4a9fd4" opacity="0.8"/>
+      <ellipse cx="50" cy="40" rx="46" ry="16" fill="none" stroke="#4a9fd4" stroke-width="2.5" transform="rotate(-20 50 40)" opacity="0.8"/>
+      <g transform="translate(10,20) rotate(-30)">
+        <path d="M0,4 L16,0 L20,4 L16,8 Z" fill="white" opacity="0.9"/>
+      </g>
+    </svg>
+  </div>
+  <div class="footer-brand">TRAVEL TIME</div>
+  <div class="footer-tagline">הדרך לחופשה המושלמת | by Assaf Dangur</div>
+  <div class="footer-links">
+    <a href="tel:0542310016">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 10a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      054-231-0016
+    </a>
+    <a href="https://www.instagram.com/traveltime165" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      אינסטגרם
+    </a>
+    <a href="https://www.facebook.com/profile.php?id=61553975242346" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      פייסבוק
+    </a>
+    <a href="https://chat.whatsapp.com/C9LR8NQRCMA5F27Kwyy3dK" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+      קבוצת דילים
+    </a>
+  </div>
+  <div class="footer-copy">© 2025 Travel Time by Assaf Dangur · כל הזכויות שמורות</div>
+</footer>
+
+<script>
+  // Smooth nav highlight on scroll
+  const sections = document.querySelectorAll('section[id]');
+
+  // Form submission handler
+  function submitForm(e) {
+    e.preventDefault();
+    const name    = document.getElementById('name').value;
+    const phone   = document.getElementById('phone').value;
+    const dest    = document.getElementById('destination').value;
+    const timing  = document.getElementById('timing').value;
+    const message = document.getElementById('message').value;
+
+    // Build mailto link (fallback when no backend)
+    const subject = encodeURIComponent(`בקשת חזרה מ-${name} – Travel Time`);
+    const body = encodeURIComponent(
+      `שם: ${name}\nטלפון: ${phone}\nיעד: ${dest || 'לא צוין'}\nמועד לחזרה: ${timing || 'לא צוין'}\nהערות: ${message || 'אין'}`
+    );
+    // Open mailto (replace with your email)
+    window.location.href = `mailto:YOUR_EMAIL@gmail.com?subject=${subject}&body=${body}`;
+
+    // Show success
+    document.getElementById('contactForm').style.display = 'none';
+    document.getElementById('formSuccess').style.display = 'block';
+  }
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 50) {
+      nav.style.background = 'rgba(26,53,96,0.98)';
+    } else {
+      nav.style.background = 'rgba(26,53,96,0.96)';
+    }
+  });
+
+  // Fade-in on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.animation = 'fadeUp 0.7s ease both';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.why-card, .gallery-item, .testimonial-card').forEach(el => {
+    el.style.opacity = '0';
+    observer.observe(el);
+  });
+</script>
+
+<!-- Floating Buttons -->
+<div style="position:fixed;bottom:1.5rem;left:1.5rem;z-index:200;display:flex;flex-direction:column;gap:0.6rem;align-items:flex-start;">
+  <!-- Direct WhatsApp to Assaf -->
+  <a href="https://wa.me/9720542310016?text=%D7%94%D7%99%20%D7%90%D7%A1%D7%A3%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%9C%20%D7%97%D7%91%D7%99%D7%9C%D7%95%D7%AA%20%D7%98%D7%99%D7%95%D7%9C%20%F0%9F%9C%8D" target="_blank" rel="noopener"
+    style="background:#25d366;color:#fff;border-radius:50px;padding:0.65rem 1.2rem;display:flex;align-items:center;gap:0.5rem;text-decoration:none;font-weight:700;font-size:0.85rem;font-family:Heebo,sans-serif;box-shadow:0 4px 16px rgba(37,211,102,0.45);white-space:nowrap;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    שלח הודעה לאסף
+  </a>
+  <!-- Join group -->
+  <a href="https://chat.whatsapp.com/C9LR8NQRCMA5F27Kwyy3dK" target="_blank" rel="noopener"
+    style="background:#128c7e;color:#fff;border-radius:50px;padding:0.65rem 1.2rem;display:flex;align-items:center;gap:0.5rem;text-decoration:none;font-weight:700;font-size:0.85rem;font-family:Heebo,sans-serif;box-shadow:0 4px 16px rgba(18,140,126,0.45);white-space:nowrap;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    קבוצת דילים
+  </a>
+</div>
+
+<script>
+  // ===== GALLERY → FORM =====
+  function selectDestination(dest) {
+    // Fill in the destination field
+    document.getElementById('destination').value = dest;
+    // Scroll to form smoothly
+    document.getElementById('contact').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Brief highlight on the field
+    const field = document.getElementById('destination');
+    field.style.transition = 'box-shadow 0.3s, border-color 0.3s';
+    field.style.borderColor = '#e8a020';
+    field.style.boxShadow = '0 0 0 4px rgba(232,160,32,0.25)';
+    setTimeout(() => {
+      field.style.borderColor = '';
+      field.style.boxShadow = '';
+    }, 2000);
+  }
+
+  // ===== COUNTER ANIMATION =====
+  function animateCounter(el) {
+    const target = parseInt(el.dataset.target);
+    if (!target) return;
+    const duration = 1800;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      el.textContent = Math.floor(current) + (target >= 10 ? '+' : '');
+    }, 16);
+  }
+
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('[data-target]').forEach(animateCounter);
+        statsObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  const statsSection = document.querySelector('.stats');
+  if (statsSection) statsObserver.observe(statsSection);
+</script>
+
+</body>
+</html>
