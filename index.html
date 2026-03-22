@@ -910,8 +910,7 @@
     const body = encodeURIComponent(
       `שם: ${name}\nטלפון: ${phone}\nיעד: ${dest || 'לא צוין'}\nמועד לחזרה: ${timing || 'לא צוין'}\nהערות: ${message || 'אין'}`
     );
-    // Open mailto (replace with your email)
-    window.location.href = `mailto:YOUR_EMAIL@gmail.com?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:asaf124801@gmail.com?subject=${subject}&body=${body}`;
 
     // Show success
     document.getElementById('contactForm').style.display = 'none';
