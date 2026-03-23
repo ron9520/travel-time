@@ -851,6 +851,9 @@
     <div class="form-success" id="formSuccess">
       <div class="check">✅</div>
       <h3>קיבלנו את הפרטים שלך!</h3>
+      <p id="successTicketNumWrap" style="font-size:0.85rem;color:#2563a8;font-weight:700;margin-bottom:0.4rem;">
+        מספר קריאה: <span id="successTicketNum"></span>
+      </p>
       <p>אסף יצור איתך קשר בהקדם האפשרי.<br/>תודה שבחרת ב-Travel Time 🌍</p>
     </div>
   </div>
@@ -942,10 +945,18 @@
 
       const data = await response.json();
       if (data.success) {
-        // 2) Save to Firestore CRM
+        // 2) Save to Firestore CRM with auto ticket number
         try {
+          const counterRef = db.collection('counters').doc('tickets');
+          let ticketNumber = '0001';
+          await db.runTransaction(async (tx) => {
+            const doc = await tx.get(counterRef);
+            const n = (doc.exists ? (doc.data().lastNumber || 0) : 0) + 1;
+            ticketNumber = String(n).padStart(4, '0');
+            tx.set(counterRef, { lastNumber: n });
+          });
           await db.collection('tickets').add({
-            name, phone,
+            name, phone, ticketNumber,
             destination: dest || 'לא צוין',
             timing: timing || 'לא צוין',
             message: message || 'אין',
@@ -954,6 +965,9 @@
             notes: [],
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           });
+          // Show ticket number in success message if element exists
+          const tnEl = document.getElementById('successTicketNum');
+          if (tnEl) tnEl.textContent = '#' + ticketNumber;
         } catch(fbErr) { console.warn('Firestore write failed:', fbErr); }
 
         document.getElementById('contactForm').style.display = 'none';

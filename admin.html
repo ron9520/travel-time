@@ -4,16 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Travel Time — ניהול קריאות</title>
+  <!-- Open Graph (link preview in WhatsApp / Telegram) -->
+  <meta property="og:title"       content="Travel Time — ניהול קריאות" />
+  <meta property="og:description" content="מערכת ניהול קריאות לקוחות | Travel Time" />
+  <meta property="og:image"       content="https://travel-time-ad.netlify.app/icons/og-admin.png" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://travel-time-ad.netlify.app/admin.html" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:image"      content="https://travel-time-ad.netlify.app/icons/og-admin.png" />
   <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
   <meta name="theme-color" content="#1a3560">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TT Admin">
+  <meta name="apple-mobile-web-app-title" content="Travel Time">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -418,6 +428,119 @@
     .ct-date { color: var(--muted); font-size: 0.75rem; margin-top: 0.15rem; }
     .ct-no { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.85rem; }
 
+    /* TICKET NUMBER */
+    .td-ticket-num {
+      font-size: 0.68rem; font-weight: 700; color: var(--sky);
+      letter-spacing: 0.04em; margin-bottom: 0.1rem;
+    }
+    .ph-ticketnum {
+      font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.9); padding: 0.1rem 0.5rem; border-radius: 10px;
+    }
+
+    /* MOBILE SEARCH TOGGLE */
+    .btn-search-toggle {
+      display: none;
+      background: rgba(255,255,255,0.13); border: none; color: white;
+      width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+      font-size: 1rem; align-items: center; justify-content: center;
+      transition: background 0.2s; flex-shrink: 0;
+    }
+    .btn-search-toggle:hover { background: rgba(255,255,255,0.24); }
+    .mobile-search-bar {
+      display: none;
+      background: var(--navy);
+      padding: 0.6rem 1rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid rgba(255,255,255,0.1);
+      position: sticky; top: 56px; z-index: 99;
+    }
+    .mobile-search-bar.open { display: block; }
+    .mobile-search-input {
+      width: 100%; padding: 0.5rem 1rem 0.5rem 2.5rem;
+      border: none; border-radius: 20px;
+      background: rgba(255,255,255,0.15); color: white;
+      font-size: 0.9rem; direction: rtl; font-family: inherit;
+    }
+    .mobile-search-input::placeholder { color: rgba(255,255,255,0.55); }
+    .mobile-search-input:focus { outline: none; background: rgba(255,255,255,0.25); }
+    .mobile-search-wrap { position: relative; }
+    .mobile-search-icon {
+      position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);
+      font-size: 0.85rem; pointer-events: none; opacity: 0.6;
+    }
+
+    /* DELETED STATUS */
+    --del-c:  #dc2626; --del-bg: #fef2f2;
+    .badge-deleted  { background: var(--del-bg); color: var(--del-c); border: 1px solid #fecaca; }
+    .s-deleted { border-right-color: var(--del-c); }
+    .s-deleted .stat-count { color: var(--del-c); }
+    .ftab.del-tab { border-color: #fecaca; color: var(--del-c); }
+    .ftab.del-tab:hover { border-color: var(--del-c); background: #fef2f2; }
+    .ftab.del-tab.active { background: var(--del-c); color: white; border-color: var(--del-c); }
+
+    .deleted-banner {
+      background: #fef2f2; border: 1.5px solid #fca5a5;
+      border-radius: 8px; padding: 0.55rem 1rem;
+      font-size: 0.8rem; color: var(--del-c); font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .deleted-banner .restore-btn {
+      background: var(--del-c); color: white; border: none;
+      border-radius: 6px; padding: 0.3rem 0.7rem;
+      font-size: 0.74rem; font-weight: 700; cursor: pointer;
+    }
+
+    /* DELETE BUTTON */
+    .abtn-delete { background: #fef2f2; color: var(--del-c); }
+    .abtn-delete:hover { background: #fee2e2; }
+
+    /* FILE UPLOAD SECTION */
+    .files-wrap { margin-top: 1.4rem; }
+    .files-title { font-size: 0.82rem; font-weight: 700; color: var(--navy); margin-bottom: 0.75rem; }
+    .file-drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 1.1rem 1rem; text-align: center;
+      cursor: pointer; transition: all 0.2s; background: #f8fafc;
+      margin-bottom: 0.9rem;
+    }
+    .file-drop-zone:hover, .file-drop-zone.drag-over { border-color: var(--blue); background: #eff6ff; }
+    .file-drop-zone .dz-icon { font-size: 1.6rem; margin-bottom: 0.3rem; }
+    .file-drop-zone .dz-text { font-size: 0.8rem; color: var(--muted); }
+    .file-drop-zone .dz-link { color: var(--blue); font-weight: 600; }
+    #fileInput { display: none; }
+
+    .file-upload-progress {
+      background: #eff6ff; border-radius: 8px;
+      padding: 0.6rem 0.9rem; margin-bottom: 0.6rem;
+      display: none;
+    }
+    .file-upload-progress.show { display: block; }
+    .fup-name { font-size: 0.78rem; font-weight: 600; color: var(--navy); margin-bottom: 0.35rem; }
+    .fup-bar-wrap { background: #e2e8f0; border-radius: 20px; height: 6px; overflow: hidden; }
+    .fup-bar { background: var(--blue); height: 100%; width: 0%; transition: width 0.2s; border-radius: 20px; }
+
+    .files-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .file-item {
+      display: flex; align-items: center; gap: 0.65rem;
+      padding: 0.6rem 0.8rem; background: #f8fafc;
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .fi-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .fi-body { flex: 1; min-width: 0; }
+    .fi-name { font-size: 0.82rem; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fi-meta { font-size: 0.7rem; color: var(--muted); margin-top: 0.1rem; }
+    .fi-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
+    .fi-btn {
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      padding: 0.22rem 0.5rem; font-size: 0.72rem; cursor: pointer;
+      color: var(--muted); transition: all 0.15s;
+    }
+    .fi-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .fi-btn.del { color: var(--del-c); }
+    .fi-btn.del:hover { border-color: var(--del-c); background: #fef2f2; }
+    .no-files { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 0.8rem 0; opacity: 0.7; }
+
     /* LOADING SPINNER */
     .loading-row { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 0.75rem; color: var(--muted); }
     .spinner { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.75s linear infinite; }
@@ -440,9 +563,10 @@
       /* Topbar — compact */
       .topbar { padding: 0 1rem; height: 56px; }
       .topbar-brand .t-sub { display: none; }
-      .search-wrap { display: none; }           /* hide search bar — use filter tabs */
+      .search-wrap { display: none; }           /* hide search bar — use mobile toggle */
       .btn-logout { padding: 0.4rem 0.7rem; font-size: 0.75rem; }
       .btn-add    { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+      .btn-search-toggle { display: flex; }
 
       /* Main padding */
       .main { padding: 1rem; }
@@ -531,16 +655,42 @@
 </head>
 <body>
 
+<!-- ══════════ SVG LOGO SYMBOL (reusable) ══════════ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="tt-logo-sym" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="ttSky" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:#87ceeb"/>
+        <stop offset="100%" style="stop-color:#4a9fd4"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="50" cy="52" rx="40" ry="46" fill="none" stroke="#2563a8" stroke-width="4"/>
+    <ellipse cx="50" cy="52" rx="36" ry="42" fill="url(#ttSky)"/>
+    <polygon points="18,74 36,44 52,62 64,46 82,74" fill="#1a3560"/>
+    <polygon points="18,74 36,50 50,68" fill="#2563a8"/>
+    <ellipse cx="50" cy="40" rx="46" ry="16" fill="none" stroke="#2563a8" stroke-width="3" transform="rotate(-20 50 40)"/>
+    <g transform="translate(12,22) rotate(-30)">
+      <path d="M0,4 L16,0 L20,4 L16,8 Z" fill="white"/>
+      <path d="M6,4 L10,0 L12,4 L10,8 Z" fill="#cde"/>
+      <path d="M14,2 L18,-2 L19,0 L15,4 Z" fill="white"/>
+    </g>
+  </symbol>
+</svg>
+
 <!-- ══════════ SPLASH ══════════ -->
 <div id="splashScreen">
-  <div class="splash-icon">✈️</div>
+  <div class="splash-icon">
+    <svg width="90" height="90" style="filter:drop-shadow(0 4px 16px rgba(0,0,0,0.35))"><use href="#tt-logo-sym"/></svg>
+  </div>
   <div class="splash-title">Travel Time</div>
 </div>
 
 <!-- ══════════ LOGIN ══════════ -->
 <div id="loginScreen">
   <div class="login-card">
-    <div class="login-logo">✈️</div>
+    <div class="login-logo">
+      <svg width="64" height="64" style="filter:drop-shadow(0 2px 8px rgba(37,99,168,0.25))"><use href="#tt-logo-sym"/></svg>
+    </div>
     <div class="login-brand">Travel Time</div>
     <div class="login-sub">ניהול קריאות לקוחות</div>
     <div class="login-error" id="loginError"></div>
@@ -553,7 +703,9 @@
 <!-- ══════════ PIN — כניסה ══════════ -->
 <div id="pinScreen" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a3560,#2563a8,#4a9fd4);padding-top:env(safe-area-inset-top);">
   <div class="pin-card">
-    <div class="pin-logo">✈️</div>
+    <div class="pin-logo">
+      <svg width="56" height="56" style="filter:drop-shadow(0 2px 8px rgba(37,99,168,0.3))"><use href="#tt-logo-sym"/></svg>
+    </div>
     <div class="pin-brand">Travel Time</div>
     <div class="pin-greeting" id="pinGreeting">שלום! הכנס את ה-PIN</div>
     <div class="pin-dots">
@@ -584,7 +736,9 @@
 <!-- ══════════ SET PIN — הגדרה ראשונה ══════════ -->
 <div id="setPinScreen" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a3560,#2563a8,#4a9fd4);padding-top:env(safe-area-inset-top);">
   <div class="pin-card">
-    <div class="pin-logo">🔑</div>
+    <div class="pin-logo">
+      <svg width="56" height="56" style="filter:drop-shadow(0 2px 8px rgba(37,99,168,0.3))"><use href="#tt-logo-sym"/></svg>
+    </div>
     <div class="pin-brand">הגדר PIN</div>
     <div class="pin-greeting" id="setPinLabel">בחר PIN בן 4 ספרות לכניסות הבאות</div>
     <div class="pin-dots">
@@ -617,7 +771,9 @@
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-brand">
-      <span class="t-icon">✈️</span>
+      <span class="t-icon" style="line-height:0">
+        <svg width="38" height="38" style="filter:drop-shadow(0 1px 4px rgba(0,0,0,0.25))"><use href="#tt-logo-sym"/></svg>
+      </span>
       <div>
         <div class="t-name">Travel Time</div>
         <div class="t-sub">מערכת ניהול קריאות</div>
@@ -626,10 +782,20 @@
     <div class="topbar-right">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input class="search-input" type="text" id="searchInput" placeholder="חיפוש לפי שם או טלפון..." oninput="onSearch(this.value)" />
+        <input class="search-input" type="text" id="searchInput" placeholder="חיפוש לפי שם, מספר קריאה או טלפון..." oninput="onSearch(this.value)" />
       </div>
+      <button class="btn-search-toggle" id="btnSearchToggle" onclick="toggleMobileSearch()" title="חיפוש">🔍</button>
       <button class="btn-add" onclick="openAddModal()">➕ קריאה חדשה</button>
       <button class="btn-logout" onclick="doLogout()">יציאה</button>
+    </div>
+  </div>
+  <!-- MOBILE SEARCH BAR -->
+  <div class="mobile-search-bar" id="mobileSearchBar">
+    <div class="mobile-search-wrap">
+      <span class="mobile-search-icon">🔍</span>
+      <input class="mobile-search-input" type="search" id="mobileSearchInput"
+             placeholder="חפש לפי שם, #מספר קריאה, או טלפון..."
+             oninput="onSearch(this.value)" />
     </div>
   </div>
 
@@ -675,6 +841,7 @@
       <button class="ftab" data-filter="inprogress" onclick="setFilter('inprogress')">🟡 בטיפול</button>
       <button class="ftab" data-filter="vacation" onclick="setFilter('vacation')">✈️ כעת בחופשה</button>
       <button class="ftab" data-filter="closed" onclick="setFilter('closed')">🟢 נסגר</button>
+      <button class="ftab del-tab" data-filter="deleted" onclick="setFilter('deleted')">🗑️ מחוקות</button>
     </div>
 
     <!-- TABLE -->
@@ -694,13 +861,22 @@
 <div class="ticket-panel" id="ticketPanel">
   <div class="ph">
     <div>
-      <div class="ph-name" id="ph-name">—</div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        <div class="ph-name" id="ph-name">—</div>
+        <span class="ph-ticketnum" id="ph-ticketnum"></span>
+      </div>
       <div class="ph-date" id="ph-date"></div>
       <span class="ph-src" id="ph-src"></span>
     </div>
     <button class="ph-close" onclick="closePanel()">✕</button>
   </div>
   <div class="pb">
+    <!-- Deleted banner -->
+    <div class="deleted-banner" id="deletedBanner" style="display:none">
+      🗑️ קריאה זו סומנה כמחוקה
+      <button class="restore-btn" onclick="restoreTicket()">שחזר קריאה</button>
+    </div>
+
     <!-- Status -->
     <div class="sec-label">סטטוס קריאה</div>
     <div class="status-btns">
@@ -712,6 +888,13 @@
 
     <!-- Info -->
     <div class="info-block">
+      <div class="info-row">
+        <div class="ir-icon">🔢</div>
+        <div class="ir-body">
+          <div class="ir-key">מספר קריאה</div>
+          <div class="ir-val" id="ir-ticketnum" style="color:var(--blue);font-size:1.05rem;">—</div>
+        </div>
+      </div>
       <div class="info-row">
         <div class="ir-icon">📞</div>
         <div class="ir-body">
@@ -748,6 +931,9 @@
       <button class="abtn abtn-wa" id="abtn-wa" onclick="waClient()">💬 WhatsApp</button>
       <button class="abtn abtn-customer" onclick="openCustomer()">👤 כרטיס לקוח</button>
     </div>
+    <div class="action-row" style="margin-top:-0.85rem;">
+      <button class="abtn abtn-delete" onclick="deleteTicket()">🗑️ מחק קריאה</button>
+    </div>
 
     <!-- Notes -->
     <div class="notes-wrap">
@@ -757,6 +943,25 @@
         <button class="note-send" onclick="addNote()">הוסף</button>
       </div>
       <div class="notes-list" id="notesList"></div>
+    </div>
+
+    <!-- Files -->
+    <div class="files-wrap">
+      <div class="files-title">📎 קבצים מצורפים</div>
+      <div class="file-drop-zone" id="fileDropZone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="onFileDragOver(event)" ondrop="onFileDrop(event)" ondragleave="onFileDragLeave(event)">
+        <div class="dz-icon">📂</div>
+        <div class="dz-text">גרור קובץ לכאן או <span class="dz-link">לחץ לבחירה</span></div>
+        <div class="dz-text" style="font-size:0.71rem;margin-top:0.2rem;opacity:0.7;">תמונות, PDF, מסמכים — עד 10MB לקובץ</div>
+      </div>
+      <input type="file" id="fileInput" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+             onchange="onFileSelected(this.files)" />
+      <div class="file-upload-progress" id="fileUploadProgress">
+        <div class="fup-name" id="fupName"></div>
+        <div class="fup-bar-wrap"><div class="fup-bar" id="fupBar"></div></div>
+      </div>
+      <div class="files-list" id="filesList"></div>
     </div>
   </div>
 </div>
@@ -843,8 +1048,9 @@ const firebaseConfig = {
   appId:             "1:19425605103:web:63a01beb2929b5ea54f21a"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.firestore();
+const auth    = firebase.auth();
+const db      = firebase.firestore();
+const storage = firebase.storage();
 
 // ══════════════════════════════════════════
 //  STATE
@@ -917,37 +1123,46 @@ function renderAll() {
 }
 
 function renderStats() {
+  const active = tickets.filter(t => t.status !== 'deleted');
   ['new','inprogress','vacation','closed'].forEach(s => {
-    document.getElementById('cnt-' + s).textContent = tickets.filter(t => t.status === s).length;
+    document.getElementById('cnt-' + s).textContent = active.filter(t => t.status === s).length;
   });
 }
 
 function renderFilterCounts() {
-  const map = { all: tickets.length, new: 0, inprogress: 0, vacation: 0, closed: 0 };
+  const nonDeleted = tickets.filter(t => t.status !== 'deleted');
+  const map = { all: nonDeleted.length, new: 0, inprogress: 0, vacation: 0, closed: 0, deleted: 0 };
   tickets.forEach(t => { if (map[t.status] !== undefined) map[t.status]++; });
   document.querySelectorAll('.ftab').forEach(btn => {
     const f = btn.dataset.filter;
     let fc = btn.querySelector('.fc');
     if (!fc) { fc = document.createElement('span'); fc.className = 'fc'; btn.appendChild(fc); }
-    fc.textContent = map[f] || 0;
+    fc.textContent = map[f] !== undefined ? map[f] : 0;
   });
 }
 
 function getFiltered() {
   let list = tickets;
-  if (currentFilter !== 'all') list = list.filter(t => t.status === currentFilter);
+  if (currentFilter === 'deleted') {
+    list = list.filter(t => t.status === 'deleted');
+  } else if (currentFilter === 'all') {
+    list = list.filter(t => t.status !== 'deleted');
+  } else {
+    list = list.filter(t => t.status === currentFilter);
+  }
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     list = list.filter(t =>
-      (t.name  || '').toLowerCase().includes(q) ||
-      (t.phone || '').includes(q)
+      (t.name         || '').toLowerCase().includes(q) ||
+      (t.phone        || '').includes(q) ||
+      (t.ticketNumber || '').includes(q)
     );
   }
   return list;
 }
 
-const STATUS_LABEL = { new:'חדש', inprogress:'בטיפול', vacation:'כעת בחופשה', closed:'נסגר' };
-const STATUS_BADGE = { new:'badge-new', inprogress:'badge-inprogress', vacation:'badge-vacation', closed:'badge-closed' };
+const STATUS_LABEL = { new:'חדש', inprogress:'בטיפול', vacation:'כעת בחופשה', closed:'נסגר', deleted:'מחוקה' };
+const STATUS_BADGE = { new:'badge-new', inprogress:'badge-inprogress', vacation:'badge-vacation', closed:'badge-closed', deleted:'badge-deleted' };
 
 function badgeHTML(status) {
   return `<span class="badge ${STATUS_BADGE[status] || 'badge-new'}">${STATUS_LABEL[status] || status}</span>`;
@@ -971,6 +1186,7 @@ function renderTable() {
   const rows = list.map(t => `
     <tr onclick='openTicket("${t.id}")'>
       <td>
+        <div class="td-ticket-num">${t.ticketNumber ? '#' + t.ticketNumber : ''}</div>
         <div class="td-name">${esc(t.name || '—')}</div>
         <div class="td-src">${t.source === 'form' ? '🌐 מהאתר' : '✏️ ידנית'}</div>
       </td>
@@ -1008,8 +1224,16 @@ function openTicket(id) {
   const t = currentTicket;
 
   document.getElementById('ph-name').textContent  = t.name || '—';
+  document.getElementById('ph-ticketnum').textContent = t.ticketNumber ? '#' + t.ticketNumber : '';
   document.getElementById('ph-date').textContent  = 'נפתח: ' + formatDate(t.createdAt);
   document.getElementById('ph-src').textContent   = t.source === 'form' ? '🌐 פנייה מהאתר' : '✏️ הוזן ידנית';
+
+  // ticket number in info block (large, visible)
+  document.getElementById('ir-ticketnum').textContent = t.ticketNumber ? '#' + t.ticketNumber : 'ישן (ללא מספר)';
+
+  // deleted banner
+  const banner = document.getElementById('deletedBanner');
+  banner.style.display = (t.status === 'deleted') ? 'flex' : 'none';
 
   // phone with tel link
   document.getElementById('ir-phone').innerHTML = t.phone
@@ -1027,6 +1251,9 @@ function openTicket(id) {
 
   // notes
   renderNotes(t.notes || []);
+
+  // files
+  renderFiles(t.files || []);
 
   document.getElementById('noteInput').value = '';
   document.getElementById('overlay').classList.add('show');
@@ -1058,11 +1285,36 @@ async function setStatus(newStatus) {
   if (!currentTicket) return;
   try {
     await db.collection('tickets').doc(currentTicket.id).update({ status: newStatus });
-    // optimistic UI
     document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.sbtn.s-${newStatus}`).classList.add('active');
+    const btn = document.querySelector(`.sbtn.s-${newStatus}`);
+    if (btn) btn.classList.add('active');
+    document.getElementById('deletedBanner').style.display = 'none';
     showToast('סטטוס עודכן ✓');
   } catch(e) { showToast('שגיאה בעדכון'); }
+}
+
+async function deleteTicket() {
+  if (!currentTicket) return;
+  const name = currentTicket.name || 'קריאה זו';
+  if (!confirm(`למחוק את "${name}"?\n\nהקריאה תועבר לתיקיית המחוקות ותוכל לשחזר אותה בכל עת.`)) return;
+  try {
+    await db.collection('tickets').doc(currentTicket.id).update({ status: 'deleted', deletedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('deletedBanner').style.display = 'flex';
+    document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
+    showToast('קריאה הועברה למחוקות 🗑️');
+    closePanel();
+  } catch(e) { showToast('שגיאה במחיקה'); }
+}
+
+async function restoreTicket() {
+  if (!currentTicket) return;
+  try {
+    await db.collection('tickets').doc(currentTicket.id).update({ status: 'new', deletedAt: null });
+    document.getElementById('deletedBanner').style.display = 'none';
+    document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.sbtn.s-new').classList.add('active');
+    showToast('קריאה שוחזרה ✓');
+  } catch(e) { showToast('שגיאה בשחזור'); }
 }
 
 async function addNote() {
@@ -1106,22 +1358,30 @@ async function saveNewTicket() {
   const name  = document.getElementById('m-name').value.trim();
   const phone = document.getElementById('m-phone').value.trim();
   if (!name || !phone) { alert('שם וטלפון הם שדות חובה'); return; }
-  const ticket = {
-    name,
-    phone,
-    destination: document.getElementById('m-dest').value.trim()    || 'לא צוין',
-    timing:      document.getElementById('m-timing').value          || 'לא צוין',
-    message:     document.getElementById('m-msg').value.trim()      || 'אין',
-    status:      'new',
-    source:      'manual',
-    notes:       [],
-    createdAt:   firebase.firestore.FieldValue.serverTimestamp()
-  };
+  const btn = document.querySelector('.mbtn-save');
+  if (btn) { btn.disabled = true; btn.textContent = 'שומר...'; }
   try {
+    const ticketNumber = await getNextTicketNumber();
+    const ticket = {
+      name,
+      phone,
+      ticketNumber,
+      destination: document.getElementById('m-dest').value.trim()    || 'לא צוין',
+      timing:      document.getElementById('m-timing').value          || 'לא צוין',
+      message:     document.getElementById('m-msg').value.trim()      || 'אין',
+      status:      'new',
+      source:      'manual',
+      notes:       [],
+      createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+    };
     await db.collection('tickets').add(ticket);
     closeAddModal();
-    showToast('קריאה נפתחה בהצלחה ✓');
-  } catch(e) { alert('שגיאה בשמירה: ' + e.message); }
+    showToast(`קריאה #${ticketNumber} נפתחה בהצלחה ✓`);
+  } catch(e) {
+    alert('שגיאה בשמירה: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'שמור קריאה'; }
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1166,7 +1426,153 @@ function setFilter(f) {
 }
 function onSearch(q) {
   searchQuery = q;
+  // sync both search inputs
+  const si = document.getElementById('searchInput');
+  const mi = document.getElementById('mobileSearchInput');
+  if (si && si.value !== q) si.value = q;
+  if (mi && mi.value !== q) mi.value = q;
   renderTable();
+}
+function toggleMobileSearch() {
+  const bar   = document.getElementById('mobileSearchBar');
+  const input = document.getElementById('mobileSearchInput');
+  const btn   = document.getElementById('btnSearchToggle');
+  const isOpen = bar.classList.toggle('open');
+  if (isOpen) {
+    input.focus();
+    btn.style.background = 'rgba(255,255,255,0.28)';
+  } else {
+    // clear search when closing
+    onSearch('');
+    btn.style.background = '';
+  }
+}
+
+// ══════════════════════════════════════════
+//  FILE UPLOAD
+// ══════════════════════════════════════════
+const FILE_MAX_MB = 10;
+
+function fileIcon(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  if (['jpg','jpeg','png','gif','webp','heic'].includes(ext)) return '🖼️';
+  if (ext === 'pdf') return '📄';
+  if (['doc','docx'].includes(ext)) return '📝';
+  if (['xls','xlsx'].includes(ext)) return '📊';
+  return '📎';
+}
+function fileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function onFileDragOver(e) { e.preventDefault(); document.getElementById('fileDropZone').classList.add('drag-over'); }
+function onFileDragLeave(e) { document.getElementById('fileDropZone').classList.remove('drag-over'); }
+function onFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('fileDropZone').classList.remove('drag-over');
+  uploadFiles(e.dataTransfer.files);
+}
+function onFileSelected(files) { uploadFiles(files); }
+
+async function uploadFiles(fileList) {
+  if (!currentTicket) return;
+  for (const file of fileList) {
+    if (file.size > FILE_MAX_MB * 1024 * 1024) {
+      showToast(`הקובץ "${file.name}" גדול מ-${FILE_MAX_MB}MB`);
+      continue;
+    }
+    await uploadSingleFile(file);
+  }
+  document.getElementById('fileInput').value = '';
+}
+
+async function uploadSingleFile(file) {
+  const progress  = document.getElementById('fileUploadProgress');
+  const bar       = document.getElementById('fupBar');
+  const nameEl    = document.getElementById('fupName');
+  progress.classList.add('show');
+  nameEl.textContent = 'מעלה: ' + file.name;
+  bar.style.width = '0%';
+
+  const safeName   = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._\u0590-\u05fe -]/g,'_');
+  const ref        = storage.ref(`tickets/${currentTicket.id}/${safeName}`);
+  const task       = ref.put(file);
+
+  await new Promise((resolve, reject) => {
+    task.on('state_changed',
+      snap => { bar.style.width = Math.round(snap.bytesTransferred / snap.totalBytes * 100) + '%'; },
+      err  => { reject(err); },
+      async () => {
+        const url = await task.snapshot.ref.getDownloadURL();
+        const fileData = { name: file.name, url, path: ref.fullPath, size: file.size, type: file.type, uploadedAt: Date.now() };
+        const existing = currentTicket.files || [];
+        await db.collection('tickets').doc(currentTicket.id).update({ files: [...existing, fileData] });
+        currentTicket.files = [...existing, fileData];
+        renderFiles(currentTicket.files);
+        showToast('קובץ הועלה בהצלחה ✓');
+        resolve();
+      }
+    );
+  }).catch(e => showToast('שגיאה בהעלאה: ' + e.message));
+
+  progress.classList.remove('show');
+  bar.style.width = '0%';
+}
+
+function renderFiles(files) {
+  const el = document.getElementById('filesList');
+  if (!files || files.length === 0) {
+    el.innerHTML = '<div class="no-files">אין קבצים מצורפים עדיין</div>';
+    return;
+  }
+  el.innerHTML = [...files].reverse().map((f, revIdx) => {
+    const idx = files.length - 1 - revIdx;
+    return `
+    <div class="file-item">
+      <div class="fi-icon">${fileIcon(f.name)}</div>
+      <div class="fi-body">
+        <div class="fi-name" title="${esc(f.name)}">${esc(f.name)}</div>
+        <div class="fi-meta">${fileSize(f.size)} · ${formatTs(f.uploadedAt)}</div>
+      </div>
+      <div class="fi-actions">
+        <button class="fi-btn" onclick="window.open('${f.url}','_blank')">פתח</button>
+        <button class="fi-btn del" onclick="deleteFile(${idx})">מחק</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteFile(idx) {
+  if (!currentTicket) return;
+  const files = currentTicket.files || [];
+  const file  = files[idx];
+  if (!file) return;
+  if (!confirm(`למחוק את הקובץ "${file.name}"?`)) return;
+  try {
+    // delete from storage
+    try { await storage.ref(file.path).delete(); } catch(e) { /* ok if already gone */ }
+    const newFiles = files.filter((_, i) => i !== idx);
+    await db.collection('tickets').doc(currentTicket.id).update({ files: newFiles });
+    currentTicket.files = newFiles;
+    renderFiles(newFiles);
+    showToast('קובץ נמחק ✓');
+  } catch(e) { showToast('שגיאה במחיקת קובץ'); }
+}
+
+// ══════════════════════════════════════════
+//  TICKET NUMBER COUNTER
+// ══════════════════════════════════════════
+async function getNextTicketNumber() {
+  const counterRef = db.collection('counters').doc('tickets');
+  let number = 1;
+  await db.runTransaction(async (tx) => {
+    const doc = await tx.get(counterRef);
+    number = (doc.exists ? (doc.data().lastNumber || 0) : 0) + 1;
+    tx.set(counterRef, { lastNumber: number });
+  });
+  return String(number).padStart(4, '0');
 }
 
 // ══════════════════════════════════════════
