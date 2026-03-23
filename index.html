@@ -892,8 +892,21 @@
   <div class="footer-copy">© 2026 Travel Time by Assaf Dangur · כל הזכויות שמורות</div>
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-  // Form submission handler – Web3Forms
+  // Firebase init (write-only for form submissions)
+  firebase.initializeApp({
+    apiKey:            "AIzaSyAk6RbhlmmQQAUohFtLRRQ0ilETOYop_Fc",
+    authDomain:        "traveltime-4d3bf.firebaseapp.com",
+    projectId:         "traveltime-4d3bf",
+    storageBucket:     "traveltime-4d3bf.firebasestorage.app",
+    messagingSenderId: "19425605103",
+    appId:             "1:19425605103:web:63a01beb2929b5ea54f21a"
+  });
+  const db = firebase.firestore();
+
+  // Form submission handler – Web3Forms + Firestore
   async function submitForm(e) {
     e.preventDefault();
     const name    = document.getElementById('name').value.trim();
@@ -912,6 +925,7 @@
     btn.textContent = 'שולח...';
 
     try {
+      // 1) Send email via Web3Forms
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -919,8 +933,7 @@
           access_key: 'b3ae9dff-c6f1-4096-9397-da230d0ffe9d',
           subject: `בקשת חזרה מ-${name} – Travel Time`,
           from_name: 'Travel Time Website',
-          name,
-          phone,
+          name, phone,
           destination: dest || 'לא צוין',
           timing: timing || 'לא צוין',
           message: message || 'אין'
@@ -929,6 +942,20 @@
 
       const data = await response.json();
       if (data.success) {
+        // 2) Save to Firestore CRM
+        try {
+          await db.collection('tickets').add({
+            name, phone,
+            destination: dest || 'לא צוין',
+            timing: timing || 'לא צוין',
+            message: message || 'אין',
+            status: 'new',
+            source: 'form',
+            notes: [],
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } catch(fbErr) { console.warn('Firestore write failed:', fbErr); }
+
         document.getElementById('contactForm').style.display = 'none';
         document.getElementById('formSuccess').style.display = 'block';
       } else {

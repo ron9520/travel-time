@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Time — ניהול קריאות</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:  #1a3560;
+      --blue:  #2563a8;
+      --sky:   #4a9fd4;
+      --gold:  #e8a020;
+      --white: #fff;
+      --bg:    #f0f4f8;
+      --card:  #ffffff;
+      --border:#e2e8f0;
+      --text:  #1e293b;
+      --muted: #64748b;
+      --new-c:    #2563a8; --new-bg:    #eff6ff;
+      --prog-c:   #d97706; --prog-bg:   #fffbeb;
+      --vac-c:    #059669; --vac-bg:    #ecfdf5;
+      --closed-c: #6b7280; --closed-bg: #f9fafb;
+      --radius: 12px;
+      --shadow: 0 2px 14px rgba(26,53,96,0.08);
+    }
+    body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; }
+
+    /* ──────────────── LOGIN ──────────────── */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, var(--sky) 100%);
+    }
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 3rem 2.5rem 2.5rem;
+      width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+      text-align: center;
+    }
+    .login-logo { font-size: 3rem; margin-bottom: 0.3rem; }
+    .login-brand { font-size: 1.5rem; font-weight: 800; color: var(--navy); }
+    .login-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; }
+    .login-field {
+      width: 100%; padding: 0.85rem 1rem;
+      border: 2px solid var(--border); border-radius: 10px;
+      font-size: 1rem; margin-bottom: 1rem;
+      text-align: right; direction: ltr;
+      transition: border-color 0.2s; font-family: inherit;
+    }
+    .login-field:focus { outline: none; border-color: var(--blue); }
+    .login-field[type="password"] { letter-spacing: 0.15em; }
+    .login-btn {
+      width: 100%; padding: 0.9rem;
+      background: var(--navy); color: white;
+      border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 0.25rem;
+    }
+    .login-btn:hover { background: var(--blue); transform: translateY(-1px); }
+    .login-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+    .login-error { color: #ef4444; font-size: 0.84rem; margin-bottom: 0.75rem; display: none; padding: 0.6rem; background: #fef2f2; border-radius: 8px; }
+
+    /* ──────────────── APP SHELL ──────────────── */
+    #appScreen { display: none; flex-direction: column; min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--navy); color: white;
+      height: 62px; padding: 0 1.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    }
+    .topbar-brand { display: flex; align-items: center; gap: 0.7rem; }
+    .topbar-brand .t-icon { font-size: 1.6rem; }
+    .topbar-brand .t-name { font-size: 1.05rem; font-weight: 800; line-height: 1; }
+    .topbar-brand .t-sub  { font-size: 0.7rem; opacity: 0.65; }
+    .topbar-right { display: flex; align-items: center; gap: 0.85rem; }
+    .search-wrap { position: relative; }
+    .search-icon { position: absolute; right: 0.85rem; top: 50%; transform: translateY(-50%); opacity: 0.55; font-size: 0.85rem; pointer-events: none; }
+    .search-input {
+      padding: 0.5rem 2.2rem 0.5rem 1rem;
+      border: none; border-radius: 20px;
+      background: rgba(255,255,255,0.13); color: white;
+      width: 210px; font-size: 0.88rem;
+      transition: background 0.2s; direction: rtl;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.55); }
+    .search-input:focus { outline: none; background: rgba(255,255,255,0.22); }
+    .btn-add {
+      padding: 0.5rem 1.2rem; background: var(--gold); color: white;
+      border: none; border-radius: 20px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-add:hover { background: #f5b030; transform: translateY(-1px); }
+    .btn-logout {
+      padding: 0.45rem 0.9rem; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.18); border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.2); }
+
+    /* MAIN */
+    .main { padding: 1.75rem 1.75rem; flex: 1; }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.75rem; }
+    .stat-card {
+      background: white; border-radius: var(--radius);
+      padding: 1.2rem 1.4rem; display: flex; align-items: center; gap: 1rem;
+      box-shadow: var(--shadow); cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border-right: 4px solid transparent;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(26,53,96,0.12); }
+    .stat-card.s-new       { border-right-color: var(--new-c); }
+    .stat-card.s-inprogress{ border-right-color: var(--prog-c); }
+    .stat-card.s-vacation  { border-right-color: var(--vac-c); }
+    .stat-card.s-closed    { border-right-color: var(--closed-c); }
+    .stat-icon { font-size: 1.9rem; line-height: 1; }
+    .stat-count { font-size: 2.1rem; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
+    .s-new       .stat-count { color: var(--new-c); }
+    .s-inprogress .stat-count { color: var(--prog-c); }
+    .s-vacation  .stat-count { color: var(--vac-c); }
+    .s-closed    .stat-count { color: var(--closed-c); }
+
+    /* FILTER TABS */
+    .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+    .ftab {
+      padding: 0.4rem 1rem; border-radius: 20px;
+      border: 2px solid var(--border); background: white; color: var(--muted);
+      font-size: 0.82rem; cursor: pointer; transition: all 0.2s; font-weight: 500;
+    }
+    .ftab:hover { border-color: var(--blue); color: var(--blue); }
+    .ftab.active { background: var(--navy); color: white; border-color: var(--navy); }
+    .ftab .fc { font-size: 0.72rem; background: rgba(0,0,0,0.08); padding: 0.05rem 0.35rem; border-radius: 10px; margin-right: 0.3rem; }
+    .ftab.active .fc { background: rgba(255,255,255,0.2); }
+
+    /* TABLE CARD */
+    .table-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .table-head { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-head-title { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+    .table-head-meta { font-size: 0.8rem; color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 0.8rem 1.2rem; text-align: right; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; background: #f8fafc; border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.12s; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 0.95rem 1.2rem; font-size: 0.88rem; vertical-align: middle; }
+    .td-name { font-weight: 700; color: var(--navy); }
+    .td-src  { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+    .td-phone { color: var(--muted); direction: ltr; display: inline-block; }
+    .td-dest { color: var(--text); }
+    .td-timing { color: var(--muted); font-size: 0.82rem; }
+    .td-date { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+    .td-arrow { color: var(--muted); font-size: 0.9rem; }
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty-text { font-size: 1rem; }
+    .empty-sub  { font-size: 0.85rem; margin-top: 0.4rem; }
+
+    /* STATUS BADGE */
+    .badge { padding: 0.28rem 0.75rem; border-radius: 20px; font-size: 0.74rem; font-weight: 700; white-space: nowrap; display: inline-block; }
+    .badge-new      { background: var(--new-bg);    color: var(--new-c); }
+    .badge-inprogress{ background: var(--prog-bg);  color: var(--prog-c); }
+    .badge-vacation { background: var(--vac-bg);    color: var(--vac-c); }
+    .badge-closed   { background: var(--closed-bg); color: var(--closed-c); border: 1px solid #e5e7eb; }
+
+    /* ──────────────── PANEL OVERLAY ──────────────── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.28); z-index: 200;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+
+    /* ──────────────── TICKET PANEL ──────────────── */
+    .ticket-panel {
+      position: fixed; top: 0; left: 0;
+      width: 460px; height: 100vh;
+      background: white; z-index: 201;
+      display: flex; flex-direction: column;
+      transform: translateX(-110%);
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 6px 0 32px rgba(0,0,0,0.15);
+    }
+    .ticket-panel.open { transform: translateX(0); }
+
+    /* panel head */
+    .ph {
+      background: linear-gradient(135deg, var(--navy), var(--blue));
+      color: white; padding: 1.2rem 1.4rem;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .ph-name  { font-size: 1.2rem; font-weight: 800; }
+    .ph-date  { font-size: 0.75rem; opacity: 0.7; margin-top: 0.2rem; }
+    .ph-src   { font-size: 0.7rem; margin-top: 0.3rem; background: rgba(255,255,255,0.15); display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; }
+    .ph-close {
+      background: rgba(255,255,255,0.15); border: none; color: white;
+      width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+      font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.2s; margin-right: 0.5rem;
+    }
+    .ph-close:hover { background: rgba(255,255,255,0.28); }
+
+    /* panel body */
+    .pb { flex: 1; overflow-y: auto; padding: 1.4rem; }
+
+    /* status buttons */
+    .sec-label { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.55rem; }
+    .status-btns { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.45rem; margin-bottom: 1.4rem; }
+    .sbtn {
+      padding: 0.5rem 0.3rem; border-radius: 8px; border: 2px solid var(--border);
+      background: white; font-size: 0.72rem; font-weight: 700; cursor: pointer;
+      transition: all 0.18s; text-align: center; line-height: 1.3;
+    }
+    .sbtn:hover { border-color: var(--sky); }
+    .sbtn.s-new.active       { background: var(--new-bg);    border-color: var(--new-c);    color: var(--new-c); }
+    .sbtn.s-inprogress.active{ background: var(--prog-bg);   border-color: var(--prog-c);   color: var(--prog-c); }
+    .sbtn.s-vacation.active  { background: var(--vac-bg);    border-color: var(--vac-c);    color: var(--vac-c); }
+    .sbtn.s-closed.active    { background: var(--closed-bg); border-color: #d1d5db;         color: var(--closed-c); }
+
+    /* info block */
+    .info-block { background: #f8fafc; border-radius: 10px; padding: 1.1rem 1.2rem; margin-bottom: 1.4rem; }
+    .info-row   { display: flex; gap: 0.7rem; margin-bottom: 0.8rem; align-items: flex-start; }
+    .info-row:last-child { margin-bottom: 0; }
+    .ir-icon { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; margin-top: 0.05rem; }
+    .ir-body {}
+    .ir-key  { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.1rem; }
+    .ir-val  { font-size: 0.9rem; font-weight: 600; }
+    .ir-val a { color: var(--blue); text-decoration: none; }
+    .ir-val a:hover { text-decoration: underline; }
+    .ir-val.italic { font-weight: 400; color: var(--muted); font-style: italic; }
+
+    /* action buttons */
+    .action-row { display: flex; gap: 0.65rem; margin-bottom: 1.4rem; }
+    .abtn {
+      flex: 1; padding: 0.6rem 0.5rem; border-radius: 10px; border: none;
+      font-size: 0.8rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 0.35rem;
+      transition: all 0.18s;
+    }
+    .abtn:hover { transform: translateY(-1px); }
+    .abtn-call     { background: #ecfdf5; color: #059669; }
+    .abtn-call:hover { background: #d1fae5; }
+    .abtn-wa       { background: #f0fdf4; color: #16a34a; }
+    .abtn-wa:hover { background: #dcfce7; }
+    .abtn-customer { background: #eff6ff; color: var(--blue); }
+    .abtn-customer:hover { background: #dbeafe; }
+
+    /* notes */
+    .notes-wrap { }
+    .notes-title { font-size: 0.82rem; font-weight: 700; color: var(--navy); margin-bottom: 0.75rem; }
+    .note-compose { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: flex-end; }
+    .note-input {
+      flex: 1; padding: 0.6rem 0.8rem; border: 2px solid var(--border);
+      border-radius: 8px; font-size: 0.84rem; resize: none; height: 66px;
+      transition: border-color 0.2s; font-family: inherit; direction: rtl;
+    }
+    .note-input:focus { outline: none; border-color: var(--blue); }
+    .note-send {
+      padding: 0 1rem; background: var(--navy); color: white;
+      border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; height: 38px; white-space: nowrap; transition: background 0.2s;
+    }
+    .note-send:hover { background: var(--blue); }
+    .notes-list { display: flex; flex-direction: column; gap: 0.55rem; }
+    .note-item { background: #fffbeb; border-right: 3px solid var(--gold); padding: 0.7rem 1rem; border-radius: 0 8px 8px 0; }
+    .note-text { font-size: 0.86rem; color: var(--text); line-height: 1.5; }
+    .note-ts   { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
+    .no-notes  { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 1.5rem 0; opacity: 0.7; }
+
+    /* ──────────────── MODAL ──────────────── */
+    .modal-wrap {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.38);
+      z-index: 300; display: none; align-items: center; justify-content: center;
+    }
+    .modal-wrap.open { display: flex; }
+    .modal {
+      background: white; border-radius: 16px;
+      padding: 2rem; width: 500px; max-width: 92vw;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 1.2rem; font-weight: 800; color: var(--navy); margin-bottom: 1.4rem; }
+    .mg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 0.9rem; }
+    .mfull { grid-column: 1 / -1; }
+    .mf label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 0.3rem; text-transform: uppercase; }
+    .mf input, .mf select, .mf textarea {
+      width: 100%; padding: 0.65rem 0.9rem;
+      border: 2px solid var(--border); border-radius: 8px;
+      font-size: 0.9rem; font-family: inherit; direction: rtl;
+      transition: border-color 0.2s;
+    }
+    .mf input:focus, .mf select:focus, .mf textarea:focus { outline: none; border-color: var(--blue); }
+    .mf textarea { resize: vertical; min-height: 80px; }
+    .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-start; margin-top: 1.25rem; flex-direction: row-reverse; }
+    .mbtn-cancel {
+      padding: 0.65rem 1.4rem; border: 2px solid var(--border);
+      background: white; border-radius: 8px; font-size: 0.88rem;
+      cursor: pointer; color: var(--muted); transition: border-color 0.2s;
+    }
+    .mbtn-cancel:hover { border-color: #94a3b8; }
+    .mbtn-save {
+      padding: 0.65rem 1.6rem; background: var(--navy); color: white;
+      border: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .mbtn-save:hover { background: var(--blue); }
+
+    /* ──────────────── CUSTOMER MODAL ──────────────── */
+    .cust-header { display: flex; align-items: center; gap: 1rem; padding: 1.2rem; background: #f8fafc; border-radius: 10px; margin-bottom: 1.4rem; }
+    .cust-avatar { width: 50px; height: 50px; background: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; font-weight: 800; flex-shrink: 0; }
+    .cust-name  { font-size: 1.05rem; font-weight: 800; color: var(--navy); }
+    .cust-phone { color: var(--muted); font-size: 0.83rem; direction: ltr; }
+    .cust-stat  { font-size: 0.78rem; color: var(--blue); margin-top: 0.2rem; }
+    .cust-tickets { display: flex; flex-direction: column; gap: 0.65rem; max-height: 380px; overflow-y: auto; }
+    .ct-row {
+      padding: 0.9rem 1rem; border: 1px solid var(--border); border-radius: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .ct-row:hover { background: #f8fafc; }
+    .ct-dest { font-weight: 700; color: var(--navy); font-size: 0.88rem; }
+    .ct-date { color: var(--muted); font-size: 0.75rem; margin-top: 0.15rem; }
+    .ct-no { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.85rem; }
+
+    /* LOADING SPINNER */
+    .loading-row { display: flex; align-items: center; justify-content: center; padding: 3rem; gap: 0.75rem; color: var(--muted); }
+    .spinner { width: 22px; height: 22px; border: 3px solid var(--border); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--navy); color: white; padding: 0.75rem 1.5rem;
+      border-radius: 30px; font-size: 0.88rem; font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 999;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">✈️</div>
+    <div class="login-brand">Travel Time</div>
+    <div class="login-sub">ניהול קריאות לקוחות</div>
+    <div class="login-error" id="loginError"></div>
+    <input class="login-field" type="email" id="loginEmail" placeholder="מייל" autocomplete="email" />
+    <input class="login-field" type="password" id="loginPass" placeholder="סיסמא" autocomplete="current-password" />
+    <button class="login-btn" onclick="doLogin()" id="loginBtn">כניסה</button>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="appScreen">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="t-icon">✈️</span>
+      <div>
+        <div class="t-name">Travel Time</div>
+        <div class="t-sub">מערכת ניהול קריאות</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" id="searchInput" placeholder="חיפוש לפי שם או טלפון..." oninput="onSearch(this.value)" />
+      </div>
+      <button class="btn-add" onclick="openAddModal()">➕ קריאה חדשה</button>
+      <button class="btn-logout" onclick="doLogout()">יציאה</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card s-new" onclick="setFilter('new')">
+        <div class="stat-icon">🔵</div>
+        <div>
+          <div class="stat-count" id="cnt-new">0</div>
+          <div class="stat-label">חדש</div>
+        </div>
+      </div>
+      <div class="stat-card s-inprogress" onclick="setFilter('inprogress')">
+        <div class="stat-icon">🟡</div>
+        <div>
+          <div class="stat-count" id="cnt-inprogress">0</div>
+          <div class="stat-label">בטיפול</div>
+        </div>
+      </div>
+      <div class="stat-card s-vacation" onclick="setFilter('vacation')">
+        <div class="stat-icon">✈️</div>
+        <div>
+          <div class="stat-count" id="cnt-vacation">0</div>
+          <div class="stat-label">כעת בחופשה</div>
+        </div>
+      </div>
+      <div class="stat-card s-closed" onclick="setFilter('closed')">
+        <div class="stat-icon">🟢</div>
+        <div>
+          <div class="stat-count" id="cnt-closed">0</div>
+          <div class="stat-label">נסגר</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-row" id="filterRow">
+      <button class="ftab active" data-filter="all" onclick="setFilter('all')">הכל</button>
+      <button class="ftab" data-filter="new" onclick="setFilter('new')">🔵 חדש</button>
+      <button class="ftab" data-filter="inprogress" onclick="setFilter('inprogress')">🟡 בטיפול</button>
+      <button class="ftab" data-filter="vacation" onclick="setFilter('vacation')">✈️ כעת בחופשה</button>
+      <button class="ftab" data-filter="closed" onclick="setFilter('closed')">🟢 נסגר</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-card">
+      <div class="table-head">
+        <div class="table-head-title">קריאות</div>
+        <div class="table-head-meta" id="tableMeta">טוען...</div>
+      </div>
+      <div id="tableBody"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ TICKET PANEL ══════════ -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="ticket-panel" id="ticketPanel">
+  <div class="ph">
+    <div>
+      <div class="ph-name" id="ph-name">—</div>
+      <div class="ph-date" id="ph-date"></div>
+      <span class="ph-src" id="ph-src"></span>
+    </div>
+    <button class="ph-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="pb">
+    <!-- Status -->
+    <div class="sec-label">סטטוס קריאה</div>
+    <div class="status-btns">
+      <button class="sbtn s-new"        onclick="setStatus('new')">🔵<br>חדש</button>
+      <button class="sbtn s-inprogress" onclick="setStatus('inprogress')">🟡<br>בטיפול</button>
+      <button class="sbtn s-vacation"   onclick="setStatus('vacation')">✈️<br>כעת בחופשה</button>
+      <button class="sbtn s-closed"     onclick="setStatus('closed')">🟢<br>נסגר</button>
+    </div>
+
+    <!-- Info -->
+    <div class="info-block">
+      <div class="info-row">
+        <div class="ir-icon">📞</div>
+        <div class="ir-body">
+          <div class="ir-key">טלפון</div>
+          <div class="ir-val" id="ir-phone">—</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="ir-icon">🌍</div>
+        <div class="ir-body">
+          <div class="ir-key">יעד מועדף</div>
+          <div class="ir-val" id="ir-dest">—</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="ir-icon">🕐</div>
+        <div class="ir-body">
+          <div class="ir-key">שעת חזרה מועדפת</div>
+          <div class="ir-val" id="ir-timing">—</div>
+        </div>
+      </div>
+      <div class="info-row" id="ir-msg-row">
+        <div class="ir-icon">💬</div>
+        <div class="ir-body">
+          <div class="ir-key">הודעה</div>
+          <div class="ir-val italic" id="ir-msg">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-row">
+      <button class="abtn abtn-call" id="abtn-call" onclick="callClient()">📞 התקשר</button>
+      <button class="abtn abtn-wa" id="abtn-wa" onclick="waClient()">💬 WhatsApp</button>
+      <button class="abtn abtn-customer" onclick="openCustomer()">👤 כרטיס לקוח</button>
+    </div>
+
+    <!-- Notes -->
+    <div class="notes-wrap">
+      <div class="notes-title">📝 הערות פנימיות</div>
+      <div class="note-compose">
+        <textarea class="note-input" id="noteInput" placeholder="כתוב הערה (למשל: התקשרתי, ממתין לאישור)..."></textarea>
+        <button class="note-send" onclick="addNote()">הוסף</button>
+      </div>
+      <div class="notes-list" id="notesList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ADD TICKET MODAL ══════════ -->
+<div class="modal-wrap" id="addModal">
+  <div class="modal">
+    <div class="modal-title">➕ קריאה חדשה</div>
+    <div class="mg">
+      <div class="mf">
+        <label>שם לקוח *</label>
+        <input type="text" id="m-name" placeholder="שם מלא" />
+      </div>
+      <div class="mf">
+        <label>טלפון *</label>
+        <input type="tel" id="m-phone" placeholder="05X-XXXXXXX" direction="ltr" />
+      </div>
+      <div class="mf">
+        <label>יעד מועדף</label>
+        <input type="text" id="m-dest" placeholder="לדוגמה: יוון, תאילנד..." />
+      </div>
+      <div class="mf">
+        <label>שעת חזרה</label>
+        <select id="m-timing">
+          <option value="">בחר שעה</option>
+          <option>בוקר (9:00–12:00)</option>
+          <option>צהריים (12:00–15:00)</option>
+          <option>אחה"צ (15:00–18:00)</option>
+          <option>ערב (18:00–21:00)</option>
+          <option>בכל שעה</option>
+        </select>
+      </div>
+      <div class="mf mfull">
+        <label>הערה / פרטים נוספים</label>
+        <textarea id="m-msg" placeholder="פרטים נוספים, הערות..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="mbtn-save" onclick="saveNewTicket()">שמור קריאה</button>
+      <button class="mbtn-cancel" onclick="closeAddModal()">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CUSTOMER MODAL ══════════ -->
+<div class="modal-wrap" id="customerModal">
+  <div class="modal">
+    <div class="modal-title">👤 כרטיס לקוח</div>
+    <div class="cust-header">
+      <div class="cust-avatar" id="cust-avatar">?</div>
+      <div>
+        <div class="cust-name" id="cust-name">—</div>
+        <div class="cust-phone" id="cust-phone">—</div>
+        <div class="cust-stat" id="cust-stat">—</div>
+      </div>
+    </div>
+    <div class="sec-label" style="margin-bottom:0.6rem;">היסטוריית קריאות</div>
+    <div class="cust-tickets" id="custTickets"></div>
+    <div class="modal-actions" style="margin-top:1.25rem;">
+      <button class="mbtn-cancel" onclick="closeCustomer()">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  FIREBASE INIT
+// ══════════════════════════════════════════
+const firebaseConfig = {
+  apiKey:            "AIzaSyAk6RbhlmmQQAUohFtLRRQ0ilETOYop_Fc",
+  authDomain:        "traveltime-4d3bf.firebaseapp.com",
+  projectId:         "traveltime-4d3bf",
+  storageBucket:     "traveltime-4d3bf.firebasestorage.app",
+  messagingSenderId: "19425605103",
+  appId:             "1:19425605103:web:63a01beb2929b5ea54f21a"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let tickets        = [];
+let currentFilter  = 'all';
+let searchQuery    = '';
+let currentTicket  = null;
+let unsubTickets   = null;
+
+// ══════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display  = 'flex';
+    subscribeTickets();
+  } else {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appScreen').style.display  = 'none';
+    if (unsubTickets) { unsubTickets(); unsubTickets = null; }
+  }
+});
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginError');
+  const btn   = document.getElementById('loginBtn');
+  err.style.display = 'none';
+  if (!email || !pass) { showErr('נא למלא מייל וסיסמא'); return; }
+  btn.disabled = true; btn.textContent = 'מתחבר...';
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(e => {
+      btn.disabled = false; btn.textContent = 'כניסה';
+      const msgs = {
+        'auth/user-not-found': 'המשתמש לא נמצא',
+        'auth/wrong-password': 'סיסמא שגויה',
+        'auth/invalid-email':  'מייל לא תקין',
+        'auth/too-many-requests': 'יותר מדי ניסיונות, נסה מאוחר יותר'
+      };
+      showErr(msgs[e.code] || 'שגיאת כניסה');
+    });
+}
+function showErr(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = 'block';
+}
+function doLogout() { auth.signOut(); }
+
+// enter key on login
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ══════════════════════════════════════════
+//  FIRESTORE — REAL-TIME LISTENER
+// ══════════════════════════════════════════
+function subscribeTickets() {
+  document.getElementById('tableBody').innerHTML = '<div class="loading-row"><div class="spinner"></div> טוען קריאות...</div>';
+  unsubTickets = db.collection('tickets')
+    .orderBy('createdAt', 'desc')
+    .onSnapshot(snap => {
+      tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAll();
+    }, err => {
+      console.error(err);
+      document.getElementById('tableBody').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">שגיאה בטעינת הנתונים</div></div>';
+    });
+}
+
+// ══════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════
+function renderAll() {
+  renderStats();
+  renderFilterCounts();
+  renderTable();
+}
+
+function renderStats() {
+  ['new','inprogress','vacation','closed'].forEach(s => {
+    document.getElementById('cnt-' + s).textContent = tickets.filter(t => t.status === s).length;
+  });
+}
+
+function renderFilterCounts() {
+  const map = { all: tickets.length, new: 0, inprogress: 0, vacation: 0, closed: 0 };
+  tickets.forEach(t => { if (map[t.status] !== undefined) map[t.status]++; });
+  document.querySelectorAll('.ftab').forEach(btn => {
+    const f = btn.dataset.filter;
+    let fc = btn.querySelector('.fc');
+    if (!fc) { fc = document.createElement('span'); fc.className = 'fc'; btn.appendChild(fc); }
+    fc.textContent = map[f] || 0;
+  });
+}
+
+function getFiltered() {
+  let list = tickets;
+  if (currentFilter !== 'all') list = list.filter(t => t.status === currentFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(t =>
+      (t.name  || '').toLowerCase().includes(q) ||
+      (t.phone || '').includes(q)
+    );
+  }
+  return list;
+}
+
+const STATUS_LABEL = { new:'חדש', inprogress:'בטיפול', vacation:'כעת בחופשה', closed:'נסגר' };
+const STATUS_BADGE = { new:'badge-new', inprogress:'badge-inprogress', vacation:'badge-vacation', closed:'badge-closed' };
+
+function badgeHTML(status) {
+  return `<span class="badge ${STATUS_BADGE[status] || 'badge-new'}">${STATUS_LABEL[status] || status}</span>`;
+}
+
+function renderTable() {
+  const list = getFiltered();
+  const meta = document.getElementById('tableMeta');
+  meta.textContent = list.length + ' קריאות';
+
+  if (list.length === 0) {
+    document.getElementById('tableBody').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">${searchQuery ? 'לא נמצאו תוצאות' : 'אין קריאות'}</div>
+        <div class="empty-sub">${searchQuery ? 'נסה חיפוש אחר' : 'לחץ "קריאה חדשה" כדי להתחיל'}</div>
+      </div>`;
+    return;
+  }
+
+  const rows = list.map(t => `
+    <tr onclick='openTicket("${t.id}")'>
+      <td>
+        <div class="td-name">${esc(t.name || '—')}</div>
+        <div class="td-src">${t.source === 'form' ? '🌐 מהאתר' : '✏️ ידנית'}</div>
+      </td>
+      <td><span class="td-phone">${esc(t.phone || '—')}</span></td>
+      <td class="td-dest">${esc(t.destination || '—')}</td>
+      <td class="td-timing">${esc(t.timing || '—')}</td>
+      <td class="td-date">${formatDate(t.createdAt)}</td>
+      <td>${badgeHTML(t.status || 'new')}</td>
+      <td class="td-arrow">‹</td>
+    </tr>`).join('');
+
+  document.getElementById('tableBody').innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>שם לקוח</th>
+          <th>טלפון</th>
+          <th>יעד</th>
+          <th>שעת חזרה</th>
+          <th>תאריך פתיחה</th>
+          <th>סטטוס</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ══════════════════════════════════════════
+//  TICKET PANEL
+// ══════════════════════════════════════════
+function openTicket(id) {
+  currentTicket = tickets.find(t => t.id === id);
+  if (!currentTicket) return;
+  const t = currentTicket;
+
+  document.getElementById('ph-name').textContent  = t.name || '—';
+  document.getElementById('ph-date').textContent  = 'נפתח: ' + formatDate(t.createdAt);
+  document.getElementById('ph-src').textContent   = t.source === 'form' ? '🌐 פנייה מהאתר' : '✏️ הוזן ידנית';
+
+  // phone with tel link
+  document.getElementById('ir-phone').innerHTML = t.phone
+    ? `<a href="tel:${t.phone}">${esc(t.phone)}</a>` : '—';
+
+  document.getElementById('ir-dest').textContent   = t.destination || 'לא צוין';
+  document.getElementById('ir-timing').textContent = t.timing      || 'לא צוין';
+  const msgEl = document.getElementById('ir-msg');
+  msgEl.textContent = t.message && t.message !== 'אין' ? t.message : '—';
+
+  // status buttons
+  document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.sbtn.s-${t.status || 'new'}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // notes
+  renderNotes(t.notes || []);
+
+  document.getElementById('noteInput').value = '';
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById('ticketPanel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('ticketPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  currentTicket = null;
+}
+
+function renderNotes(notes) {
+  const el = document.getElementById('notesList');
+  if (!notes || notes.length === 0) {
+    el.innerHTML = '<div class="no-notes">אין הערות עדיין</div>';
+    return;
+  }
+  // newest first
+  const sorted = [...notes].sort((a,b) => (b.ts || 0) - (a.ts || 0));
+  el.innerHTML = sorted.map(n => `
+    <div class="note-item">
+      <div class="note-text">${esc(n.text)}</div>
+      <div class="note-ts">${formatTs(n.ts)}</div>
+    </div>`).join('');
+}
+
+async function setStatus(newStatus) {
+  if (!currentTicket) return;
+  try {
+    await db.collection('tickets').doc(currentTicket.id).update({ status: newStatus });
+    // optimistic UI
+    document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.sbtn.s-${newStatus}`).classList.add('active');
+    showToast('סטטוס עודכן ✓');
+  } catch(e) { showToast('שגיאה בעדכון'); }
+}
+
+async function addNote() {
+  if (!currentTicket) return;
+  const input = document.getElementById('noteInput');
+  const text  = input.value.trim();
+  if (!text) return;
+  const note = { text, ts: Date.now(), id: Date.now().toString() };
+  const existingNotes = currentTicket.notes || [];
+  try {
+    await db.collection('tickets').doc(currentTicket.id).update({
+      notes: [...existingNotes, note]
+    });
+    input.value = '';
+    showToast('הערה נשמרה ✓');
+  } catch(e) { showToast('שגיאה בשמירת הערה'); }
+}
+
+function callClient() {
+  if (!currentTicket || !currentTicket.phone) return;
+  window.open('tel:' + currentTicket.phone);
+}
+function waClient() {
+  if (!currentTicket || !currentTicket.phone) return;
+  const phone = currentTicket.phone.replace(/[^0-9]/g, '').replace(/^0/, '972');
+  const msg   = encodeURIComponent(`שלום ${currentTicket.name}, אני אסף מ-Travel Time 😊 התקשרת בנוגע לחופשה ל-${currentTicket.destination || 'יעד'}, רוצה לעזור!`);
+  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+}
+
+// ══════════════════════════════════════════
+//  ADD TICKET
+// ══════════════════════════════════════════
+function openAddModal()  { document.getElementById('addModal').classList.add('open'); }
+function closeAddModal() {
+  document.getElementById('addModal').classList.remove('open');
+  ['m-name','m-phone','m-dest','m-msg'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('m-timing').selectedIndex = 0;
+}
+
+async function saveNewTicket() {
+  const name  = document.getElementById('m-name').value.trim();
+  const phone = document.getElementById('m-phone').value.trim();
+  if (!name || !phone) { alert('שם וטלפון הם שדות חובה'); return; }
+  const ticket = {
+    name,
+    phone,
+    destination: document.getElementById('m-dest').value.trim()    || 'לא צוין',
+    timing:      document.getElementById('m-timing').value          || 'לא צוין',
+    message:     document.getElementById('m-msg').value.trim()      || 'אין',
+    status:      'new',
+    source:      'manual',
+    notes:       [],
+    createdAt:   firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try {
+    await db.collection('tickets').add(ticket);
+    closeAddModal();
+    showToast('קריאה נפתחה בהצלחה ✓');
+  } catch(e) { alert('שגיאה בשמירה: ' + e.message); }
+}
+
+// ══════════════════════════════════════════
+//  CUSTOMER VIEW
+// ══════════════════════════════════════════
+function openCustomer() {
+  if (!currentTicket) return;
+  const phone = currentTicket.phone;
+  const name  = currentTicket.name;
+  const all   = tickets.filter(t => t.phone === phone);
+
+  document.getElementById('cust-avatar').textContent = (name || '?')[0];
+  document.getElementById('cust-name').textContent   = name || '—';
+  document.getElementById('cust-phone').textContent  = phone || '—';
+  document.getElementById('cust-stat').textContent   = `${all.length} קריאה${all.length !== 1 ? 'ות' : ''} סה"כ`;
+
+  const el = document.getElementById('custTickets');
+  if (all.length === 0) {
+    el.innerHTML = '<div class="ct-no">אין קריאות נוספות</div>';
+  } else {
+    el.innerHTML = all.map(t => `
+      <div class="ct-row" onclick="closeCustomer(); openTicket('${t.id}')">
+        <div>
+          <div class="ct-dest">${esc(t.destination || '—')}</div>
+          <div class="ct-date">${formatDate(t.createdAt)}</div>
+        </div>
+        ${badgeHTML(t.status || 'new')}
+      </div>`).join('');
+  }
+
+  document.getElementById('customerModal').classList.add('open');
+}
+function closeCustomer() { document.getElementById('customerModal').classList.remove('open'); }
+
+// ══════════════════════════════════════════
+//  FILTER & SEARCH
+// ══════════════════════════════════════════
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.ftab').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  renderTable();
+}
+function onSearch(q) {
+  searchQuery = q;
+  renderTable();
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function formatDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function formatTs(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleDateString('he-IL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
