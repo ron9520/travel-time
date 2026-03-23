@@ -896,9 +896,10 @@
 </footer>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
-  // Firebase init (write-only for form submissions)
+  // Firebase init (anonymous auth + Firestore write for form submissions)
   firebase.initializeApp({
     apiKey:            "AIzaSyAk6RbhlmmQQAUohFtLRRQ0ilETOYop_Fc",
     authDomain:        "traveltime-4d3bf.firebaseapp.com",
@@ -907,7 +908,8 @@
     messagingSenderId: "19425605103",
     appId:             "1:19425605103:web:63a01beb2929b5ea54f21a"
   });
-  const db = firebase.firestore();
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
 
   // Form submission handler – Firestore first, then Web3Forms email (best-effort)
   async function submitForm(e) {
@@ -930,6 +932,11 @@
     let ticketNumber = '0001';
 
     try {
+      // 0) Sign in anonymously so Firestore Security Rules allow the write
+      if (!auth.currentUser) {
+        await auth.signInAnonymously();
+      }
+
       // 1) Save to Firestore CRM — primary action, must succeed
       const counterRef = db.collection('counters').doc('tickets');
       await db.runTransaction(async (tx) => {
@@ -949,13 +956,7 @@
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // Show success immediately after Firestore write
-      const tnEl = document.getElementById('successTicketNum');
-      if (tnEl) tnEl.textContent = '#' + ticketNumber;
-      document.getElementById('contactForm').style.display = 'none';
-      document.getElementById('formSuccess').style.display = 'block';
-
-      // 2) Send email via Web3Forms — best-effort, does not affect UX
+      // 2) Send email notification via Web3Forms (run in parallel — non-blocking)
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -969,7 +970,13 @@
           timing: timing || 'לא צוין',
           message: message || 'אין'
         })
-      }).catch(err => console.warn('Web3Forms email failed (non-critical):', err));
+      }).catch(err => console.warn('Web3Forms email failed:', err));
+
+      // 3) Show success message with ticket number
+      const tnEl = document.getElementById('successTicketNum');
+      if (tnEl) tnEl.textContent = '#' + ticketNumber;
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
 
     } catch (err) {
       console.error('Form submission error:', err);
