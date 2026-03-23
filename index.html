@@ -1057,5 +1057,207 @@
   if (statsSection) statsObserver.observe(statsSection);
 </script>
 
+<!-- ===== ACCESSIBILITY WIDGET ===== -->
+<style>
+  /* Floating button */
+  #a11y-btn {
+    position: fixed;
+    left: 16px;
+    bottom: 80px;
+    z-index: 9999;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #1a3560;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    font-size: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    outline: none;
+    aria-label: "נגישות";
+  }
+  #a11y-btn:hover { transform: scale(1.1); box-shadow: 0 6px 22px rgba(0,0,0,0.35); }
+  #a11y-btn:focus-visible { outline: 3px solid #4a9fd4; outline-offset: 3px; }
+
+  /* Panel */
+  #a11y-panel {
+    position: fixed;
+    left: 16px;
+    bottom: 142px;
+    z-index: 9998;
+    width: 240px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    padding: 1.1rem 1rem;
+    direction: rtl;
+    display: none;
+    border: 1.5px solid #e2e8f0;
+  }
+  #a11y-panel.open { display: block; }
+  #a11y-panel h3 {
+    font-size: 0.82rem; font-weight: 800; color: #1a3560;
+    margin-bottom: 0.8rem; text-align: center; letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .a11y-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.45rem 0; border-bottom: 1px solid #f1f5f9;
+  }
+  .a11y-row:last-child { border-bottom: none; }
+  .a11y-label { font-size: 0.82rem; color: #1e293b; }
+  .a11y-controls { display: flex; gap: 0.3rem; }
+  .a11y-togbtn {
+    background: #f0f4f8; border: 1.5px solid #e2e8f0;
+    border-radius: 6px; padding: 0.25rem 0.55rem;
+    font-size: 0.8rem; cursor: pointer; color: #1a3560;
+    font-weight: 700; transition: all 0.15s; line-height: 1;
+    font-family: inherit;
+  }
+  .a11y-togbtn:hover { background: #1a3560; color: #fff; border-color: #1a3560; }
+  .a11y-togbtn.active { background: #1a3560; color: #fff; border-color: #1a3560; }
+  .a11y-reset {
+    width: 100%; margin-top: 0.75rem;
+    padding: 0.5rem; background: #f0f4f8;
+    border: 1.5px solid #e2e8f0; border-radius: 8px;
+    font-size: 0.78rem; color: #64748b; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+  }
+  .a11y-reset:hover { background: #e2e8f0; color: #1a3560; }
+
+  /* Accessibility modes */
+  body.a11y-contrast { filter: contrast(1.5); }
+  body.a11y-grayscale { filter: grayscale(1); }
+  body.a11y-large-text { font-size: 120% !important; }
+  body.a11y-large-text * { font-size: inherit; }
+  body.a11y-underline-links a { text-decoration: underline !important; }
+  body.a11y-readable-font,
+  body.a11y-readable-font * { font-family: Arial, sans-serif !important; }
+  body.a11y-no-anim *,
+  body.a11y-no-anim *::before,
+  body.a11y-no-anim *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+</style>
+
+<button id="a11y-btn" onclick="toggleA11yPanel()" aria-label="פתח תפריט נגישות" title="נגישות">
+  ♿
+</button>
+
+<div id="a11y-panel" role="dialog" aria-label="אפשרויות נגישות">
+  <h3>♿ נגישות</h3>
+
+  <div class="a11y-row">
+    <span class="a11y-label">גודל טקסט</span>
+    <div class="a11y-controls">
+      <button class="a11y-togbtn" onclick="fontSize(-1)" aria-label="הקטן טקסט">A-</button>
+      <button class="a11y-togbtn" onclick="fontSize(1)"  aria-label="הגדל טקסט">A+</button>
+    </div>
+  </div>
+
+  <div class="a11y-row">
+    <span class="a11y-label">ניגודיות גבוהה</span>
+    <button class="a11y-togbtn" id="tog-contrast" onclick="toggle('contrast')" aria-pressed="false">הפעל</button>
+  </div>
+
+  <div class="a11y-row">
+    <span class="a11y-label">גווני אפור</span>
+    <button class="a11y-togbtn" id="tog-grayscale" onclick="toggle('grayscale')" aria-pressed="false">הפעל</button>
+  </div>
+
+  <div class="a11y-row">
+    <span class="a11y-label">הדגשת קישורים</span>
+    <button class="a11y-togbtn" id="tog-underline-links" onclick="toggle('underline-links')" aria-pressed="false">הפעל</button>
+  </div>
+
+  <div class="a11y-row">
+    <span class="a11y-label">פונט קריא</span>
+    <button class="a11y-togbtn" id="tog-readable-font" onclick="toggle('readable-font')" aria-pressed="false">הפעל</button>
+  </div>
+
+  <div class="a11y-row">
+    <span class="a11y-label">עצור אנימציות</span>
+    <button class="a11y-togbtn" id="tog-no-anim" onclick="toggle('no-anim')" aria-pressed="false">הפעל</button>
+  </div>
+
+  <button class="a11y-reset" onclick="resetA11y()">↺ איפוס הכל</button>
+</div>
+
+<script>
+  // Accessibility widget
+  let fontScale = 0;
+  const BASE_SIZE = 16;
+
+  function toggleA11yPanel() {
+    const p = document.getElementById('a11y-panel');
+    const open = p.classList.toggle('open');
+    document.getElementById('a11y-btn').setAttribute('aria-expanded', open);
+  }
+
+  // Close panel when clicking outside
+  document.addEventListener('click', function(e) {
+    const panel = document.getElementById('a11y-panel');
+    const btn   = document.getElementById('a11y-btn');
+    if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove('open');
+    }
+  });
+
+  function toggle(mode) {
+    const body = document.body;
+    const cls  = 'a11y-' + mode;
+    const btn  = document.getElementById('tog-' + mode);
+    const active = body.classList.toggle(cls);
+    btn.textContent = active ? 'כבה' : 'הפעל';
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', active);
+    saveA11y();
+  }
+
+  function fontSize(dir) {
+    fontScale = Math.max(-3, Math.min(5, fontScale + dir));
+    document.documentElement.style.fontSize = (BASE_SIZE + fontScale * 2) + 'px';
+    saveA11y();
+  }
+
+  function resetA11y() {
+    ['contrast','grayscale','underline-links','readable-font','no-anim'].forEach(m => {
+      document.body.classList.remove('a11y-' + m);
+      const btn = document.getElementById('tog-' + m);
+      if (btn) { btn.textContent = 'הפעל'; btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); }
+    });
+    fontScale = 0;
+    document.documentElement.style.fontSize = '';
+    try { localStorage.removeItem('tt_a11y'); } catch(e){}
+  }
+
+  function saveA11y() {
+    try {
+      const active = ['contrast','grayscale','underline-links','readable-font','no-anim']
+        .filter(m => document.body.classList.contains('a11y-' + m));
+      localStorage.setItem('tt_a11y', JSON.stringify({ active, fontScale }));
+    } catch(e){}
+  }
+
+  function loadA11y() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('tt_a11y') || 'null');
+      if (!saved) return;
+      (saved.active || []).forEach(m => {
+        document.body.classList.add('a11y-' + m);
+        const btn = document.getElementById('tog-' + m);
+        if (btn) { btn.textContent = 'כבה'; btn.classList.add('active'); btn.setAttribute('aria-pressed','true'); }
+      });
+      if (saved.fontScale) {
+        fontScale = saved.fontScale;
+        document.documentElement.style.fontSize = (BASE_SIZE + fontScale * 2) + 'px';
+      }
+    } catch(e){}
+  }
+  loadA11y();
+</script>
 </body>
 </html>
