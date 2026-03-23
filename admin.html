@@ -367,9 +367,9 @@
     }
     .note-send:hover { background: var(--blue); }
     .notes-list { display: flex; flex-direction: column; gap: 0.55rem; }
-    .note-item { background: #fffbeb; border-right: 3px solid var(--gold); padding: 0.7rem 1rem; border-radius: 0 8px 8px 0; }
-    .note-text { font-size: 0.86rem; color: var(--text); line-height: 1.5; }
-    .note-ts   { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
+    .note-item { background: #fffbeb; border-right: 3px solid var(--gold); padding: 0.65rem 0.9rem; border-radius: 0 8px 8px 0; }
+    .note-text { font-size: 0.86rem; color: var(--text); line-height: 1.5; margin-top: 0.15rem; }
+    .note-ts   { font-size: 0.68rem; color: var(--muted); }
     .no-notes  { text-align: center; color: var(--muted); font-size: 0.82rem; padding: 1.5rem 0; opacity: 0.7; }
 
     /* ──────────────── MODAL ──────────────── */
@@ -429,14 +429,32 @@
     .ct-no { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.85rem; }
 
     /* TICKET NUMBER */
-    .td-ticket-num {
-      font-size: 0.68rem; font-weight: 700; color: var(--sky);
-      letter-spacing: 0.04em; margin-bottom: 0.1rem;
+    .td-ticket-num-badge {
+      display: inline-block; background: var(--sky); color: white;
+      font-size: 0.68rem; font-weight: 800;
+      padding: 0.12rem 0.55rem; border-radius: 20px; letter-spacing: 0.04em;
     }
+    .td-num-col  { width: 72px; vertical-align: middle; }
+    .td-name-col { vertical-align: middle; }
+    .td-badge-col { vertical-align: middle; }
+    .row-deleted td { opacity: 0.55; }
+    .row-deleted .td-name { text-decoration: line-through; }
     .ph-ticketnum {
       font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,0.18);
       color: rgba(255,255,255,0.9); padding: 0.1rem 0.5rem; border-radius: 10px;
     }
+
+    /* NOTES — edit & delete */
+    .note-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }
+    .note-action-btns { display: flex; gap: 0.25rem; }
+    .note-btn { background: none; border: none; cursor: pointer; font-size: 0.8rem; opacity: 0.4; padding: 0.1rem 0.3rem; border-radius: 4px; transition: all 0.15s; }
+    .note-btn:hover { opacity: 1; background: rgba(0,0,0,0.07); }
+    .note-edit-input { width: 100%; padding: 0.5rem 0.7rem; border: 2px solid var(--blue); border-radius: 6px; font-size: 0.84rem; font-family: inherit; resize: none; min-height: 58px; direction: rtl; margin-bottom: 0.45rem; }
+    .note-edit-input:focus { outline: none; }
+    .note-edit-row { display: flex; gap: 0.4rem; }
+    .note-save-btn { padding: 0.3rem 0.85rem; background: var(--navy); color: white; border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+    .note-save-btn:hover { background: var(--blue); }
+    .note-cancel-btn { padding: 0.3rem 0.75rem; background: none; border: 1.5px solid var(--border); border-radius: 6px; font-size: 0.78rem; cursor: pointer; color: var(--muted); }
 
     /* MOBILE SEARCH TOGGLE */
     .btn-search-toggle {
@@ -587,20 +605,47 @@
       /* Table — card layout on mobile */
       .table-card { border-radius: 10px; }
       .table-head { padding: 0.85rem 1rem; }
-      table, thead, tbody, tr, td, th { display: block; }
-      thead { display: none; }                  /* hide column headers */
+      table { display: block; width: 100%; }
+      thead { display: none; }
+      tbody { display: block; }
       tbody tr {
-        background: white; border-radius: 10px; margin: 0;
-        padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
-        display: flex; flex-direction: column; gap: 0.3rem; cursor: pointer;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        background: white; border-radius: 0; margin: 0;
+        padding: 0.9rem 1rem; border-bottom: 1px solid var(--border);
+        cursor: pointer; gap: 0.18rem 0.7rem; position: relative;
       }
       tbody tr:hover { background: #f8fafc; }
-      tbody td { padding: 0; border: none; font-size: 0.88rem; }
-      .td-arrow { display: none; }
+      tbody tr:first-child { border-radius: 10px 10px 0 0; }
+      tbody tr:last-child  { border-radius: 0 0 10px 10px; border-bottom: none; }
 
-      /* Mobile card row: name + badge on same line */
-      tbody tr { position: relative; padding-left: 3rem; }
-      tbody td:last-child { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); }
+      tbody td { display: block; padding: 0; border: none; font-size: 0.86rem; }
+
+      /* Ticket# – top-left */
+      tbody td.td-num-col  { grid-column: 1; grid-row: 1; }
+      /* Name – second row left */
+      tbody td.td-name-col { grid-column: 1; grid-row: 2; }
+      /* Badge – right column, vertically centered across rows 1-3 */
+      tbody td.td-badge-col {
+        grid-column: 2; grid-row: 1 / 4;
+        display: flex; align-items: center; justify-content: flex-end;
+      }
+      /* Phone, dest, timing, date – rows 3-6 left */
+      tbody td[data-label] {
+        grid-column: 1;
+        display: flex; align-items: baseline; gap: 0.35rem;
+        font-size: 0.8rem; color: var(--muted);
+      }
+      tbody td[data-label]::before {
+        content: attr(data-label);
+        flex-shrink: 0; font-size: 0.68rem; font-weight: 700;
+        color: var(--muted); opacity: 0.65; min-width: 48px;
+      }
+      tbody td.td-phone-col  { grid-row: 3; }
+      tbody td.td-dest-col   { grid-row: 4; }
+      tbody td.td-timing-col { grid-row: 5; }
+      tbody td.td-date-col   { grid-row: 6; }
+      tbody td.td-arrow      { display: none; }
 
       /* Ticket panel — full width on mobile */
       .ticket-panel { width: 100%; left: 0; right: 0; border-radius: 20px 20px 0 0;
@@ -1184,17 +1229,19 @@ function renderTable() {
   }
 
   const rows = list.map(t => `
-    <tr onclick='openTicket("${t.id}")'>
-      <td>
-        <div class="td-ticket-num">${t.ticketNumber ? '#' + t.ticketNumber : ''}</div>
+    <tr onclick='openTicket("${t.id}")' class="${t.status === 'deleted' ? 'row-deleted' : ''}">
+      <td class="td-num-col">
+        <span class="td-ticket-num-badge">${t.ticketNumber ? '#' + t.ticketNumber : '—'}</span>
+      </td>
+      <td class="td-name-col">
         <div class="td-name">${esc(t.name || '—')}</div>
         <div class="td-src">${t.source === 'form' ? '🌐 מהאתר' : '✏️ ידנית'}</div>
       </td>
-      <td><span class="td-phone">${esc(t.phone || '—')}</span></td>
-      <td class="td-dest">${esc(t.destination || '—')}</td>
-      <td class="td-timing">${esc(t.timing || '—')}</td>
-      <td class="td-date">${formatDate(t.createdAt)}</td>
-      <td>${badgeHTML(t.status || 'new')}</td>
+      <td class="td-phone-col" data-label="📞"><span class="td-phone">${esc(t.phone || '—')}</span></td>
+      <td class="td-dest-col td-dest" data-label="🌍">${esc(t.destination || '—')}</td>
+      <td class="td-timing-col td-timing" data-label="🕐">${esc(t.timing || '—')}</td>
+      <td class="td-date-col td-date" data-label="📅">${formatDate(t.createdAt)}</td>
+      <td class="td-badge-col">${badgeHTML(t.status || 'new')}</td>
       <td class="td-arrow">‹</td>
     </tr>`).join('');
 
@@ -1202,6 +1249,7 @@ function renderTable() {
     <table>
       <thead>
         <tr>
+          <th style="width:76px">#</th>
           <th>שם לקוח</th>
           <th>טלפון</th>
           <th>יעד</th>
@@ -1272,13 +1320,62 @@ function renderNotes(notes) {
     el.innerHTML = '<div class="no-notes">אין הערות עדיין</div>';
     return;
   }
-  // newest first
   const sorted = [...notes].sort((a,b) => (b.ts || 0) - (a.ts || 0));
   el.innerHTML = sorted.map(n => `
-    <div class="note-item">
+    <div class="note-item" id="ni-${n.id}">
+      <div class="note-header">
+        <div class="note-ts">${formatTs(n.ts)}${n.editedAt ? ' (נערך)' : ''}</div>
+        <div class="note-action-btns">
+          <button class="note-btn" title="ערוך" onclick="startEditNote('${n.id}')">✏️</button>
+          <button class="note-btn" title="מחק" onclick="deleteNote('${n.id}')">🗑️</button>
+        </div>
+      </div>
       <div class="note-text">${esc(n.text)}</div>
-      <div class="note-ts">${formatTs(n.ts)}</div>
     </div>`).join('');
+}
+
+function startEditNote(noteId) {
+  if (!currentTicket) return;
+  const note = (currentTicket.notes || []).find(n => n.id === noteId);
+  if (!note) return;
+  const el = document.getElementById('ni-' + noteId);
+  if (!el) return;
+  el.innerHTML = `
+    <textarea class="note-edit-input" id="nei-${noteId}">${note.text}</textarea>
+    <div class="note-edit-row">
+      <button class="note-save-btn" onclick="saveEditNote('${noteId}')">שמור</button>
+      <button class="note-cancel-btn" onclick="renderNotes(currentTicket.notes||[])">ביטול</button>
+    </div>`;
+  const ta = document.getElementById('nei-' + noteId);
+  if (ta) { ta.focus(); ta.selectionStart = ta.value.length; }
+}
+
+async function saveEditNote(noteId) {
+  if (!currentTicket) return;
+  const ta = document.getElementById('nei-' + noteId);
+  const newText = (ta ? ta.value : '').trim();
+  if (!newText) return;
+  const notes   = currentTicket.notes || [];
+  const updated = notes.map(n => n.id === noteId ? { ...n, text: newText, editedAt: Date.now() } : n);
+  try {
+    await db.collection('tickets').doc(currentTicket.id).update({ notes: updated });
+    currentTicket.notes = updated;
+    renderNotes(updated);
+    showToast('הערה עודכנה ✓');
+  } catch(e) { showToast('שגיאה בעדכון הערה'); }
+}
+
+async function deleteNote(noteId) {
+  if (!currentTicket) return;
+  if (!confirm('למחוק את ההערה הזו?')) return;
+  const notes   = currentTicket.notes || [];
+  const updated = notes.filter(n => n.id !== noteId);
+  try {
+    await db.collection('tickets').doc(currentTicket.id).update({ notes: updated });
+    currentTicket.notes = updated;
+    renderNotes(updated);
+    showToast('הערה נמחקה ✓');
+  } catch(e) { showToast('שגיאה במחיקה'); }
 }
 
 async function setStatus(newStatus) {
