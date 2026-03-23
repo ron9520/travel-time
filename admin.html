@@ -374,6 +374,7 @@
       box-shadow: 0 24px 64px rgba(0,0,0,0.2);
       max-height: 90vh; overflow-y: auto;
     }
+    .modal-handle { display: none; }
     .modal-title { font-size: 1.2rem; font-weight: 800; color: var(--navy); margin-bottom: 1.4rem; }
     .mg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-bottom: 0.9rem; }
     .mfull { grid-column: 1 / -1; }
@@ -484,12 +485,34 @@
       .ticket-panel.open { transform: translateY(0); }
       .status-btns { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
 
-      /* Modals — full width */
-      .modal { width: 96vw; padding: 1.5rem 1.1rem; border-radius: 16px 16px 0 0;
-               position: fixed; bottom: 0; left: 0; right: 0; margin: 0;
-               max-height: 90vh; }
-      .modal-wrap { align-items: flex-end; }
+      /* Modals — bottom sheet on mobile */
+      .modal-wrap { align-items: flex-end; background: rgba(0,0,0,0.45); }
+      .modal {
+        width: 100%; max-width: 100%; margin: 0;
+        border-radius: 20px 20px 0 0;
+        padding: 0 0 env(safe-area-inset-bottom);
+        max-height: 88vh;
+        display: flex; flex-direction: column;
+        animation: slideUp 0.3s cubic-bezier(0.4,0,0.2,1);
+      }
+      @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      .modal-handle {
+        display: block; width: 40px; height: 4px;
+        background: #d1d5db; border-radius: 4px;
+        margin: 10px auto 0; flex-shrink: 0;
+      }
+      .modal-scroll {
+        flex: 1; overflow-y: auto; padding: 1.2rem 1.2rem 0;
+        -webkit-overflow-scrolling: touch;
+      }
+      .modal-title { font-size: 1.1rem; margin-bottom: 1.1rem; }
+      .modal-actions {
+        padding: 1rem 1.2rem calc(0.8rem + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--border); flex-shrink: 0;
+        background: white; margin-top: 0;
+      }
       .mg { grid-template-columns: 1fr; }
+      .mbtn-save, .mbtn-cancel { padding: 0.75rem 1.2rem; font-size: 0.9rem; }
 
       /* PIN screen — full screen friendly */
       .pin-card { width: 92vw; padding: 1.8rem 1.2rem 1.5rem; }
@@ -741,34 +764,37 @@
 <!-- ══════════ ADD TICKET MODAL ══════════ -->
 <div class="modal-wrap" id="addModal">
   <div class="modal">
-    <div class="modal-title">➕ קריאה חדשה</div>
-    <div class="mg">
-      <div class="mf">
-        <label>שם לקוח *</label>
-        <input type="text" id="m-name" placeholder="שם מלא" />
-      </div>
-      <div class="mf">
-        <label>טלפון *</label>
-        <input type="tel" id="m-phone" placeholder="05X-XXXXXXX" direction="ltr" />
-      </div>
-      <div class="mf">
-        <label>יעד מועדף</label>
-        <input type="text" id="m-dest" placeholder="לדוגמה: יוון, תאילנד..." />
-      </div>
-      <div class="mf">
-        <label>שעת חזרה</label>
-        <select id="m-timing">
-          <option value="">בחר שעה</option>
-          <option>בוקר (9:00–12:00)</option>
-          <option>צהריים (12:00–15:00)</option>
-          <option>אחה"צ (15:00–18:00)</option>
-          <option>ערב (18:00–21:00)</option>
-          <option>בכל שעה</option>
-        </select>
-      </div>
-      <div class="mf mfull">
-        <label>הערה / פרטים נוספים</label>
-        <textarea id="m-msg" placeholder="פרטים נוספים, הערות..."></textarea>
+    <div class="modal-handle"></div>
+    <div class="modal-scroll">
+      <div class="modal-title">➕ קריאה חדשה</div>
+      <div class="mg">
+        <div class="mf">
+          <label>שם לקוח *</label>
+          <input type="text" id="m-name" placeholder="שם מלא" />
+        </div>
+        <div class="mf">
+          <label>טלפון *</label>
+          <input type="tel" id="m-phone" placeholder="05X-XXXXXXX" direction="ltr" />
+        </div>
+        <div class="mf">
+          <label>יעד מועדף</label>
+          <input type="text" id="m-dest" placeholder="לדוגמה: יוון, תאילנד..." />
+        </div>
+        <div class="mf">
+          <label>שעת חזרה</label>
+          <select id="m-timing">
+            <option value="">בחר שעה</option>
+            <option>בוקר (9:00–12:00)</option>
+            <option>צהריים (12:00–15:00)</option>
+            <option>אחה"צ (15:00–18:00)</option>
+            <option>ערב (18:00–21:00)</option>
+            <option>בכל שעה</option>
+          </select>
+        </div>
+        <div class="mf mfull">
+          <label>הערה / פרטים נוספים</label>
+          <textarea id="m-msg" placeholder="פרטים נוספים, הערות..."></textarea>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -781,18 +807,21 @@
 <!-- ══════════ CUSTOMER MODAL ══════════ -->
 <div class="modal-wrap" id="customerModal">
   <div class="modal">
-    <div class="modal-title">👤 כרטיס לקוח</div>
-    <div class="cust-header">
-      <div class="cust-avatar" id="cust-avatar">?</div>
-      <div>
-        <div class="cust-name" id="cust-name">—</div>
-        <div class="cust-phone" id="cust-phone">—</div>
-        <div class="cust-stat" id="cust-stat">—</div>
+    <div class="modal-handle"></div>
+    <div class="modal-scroll">
+      <div class="modal-title">👤 כרטיס לקוח</div>
+      <div class="cust-header">
+        <div class="cust-avatar" id="cust-avatar">?</div>
+        <div>
+          <div class="cust-name" id="cust-name">—</div>
+          <div class="cust-phone" id="cust-phone">—</div>
+          <div class="cust-stat" id="cust-stat">—</div>
+        </div>
       </div>
+      <div class="sec-label" style="margin-bottom:0.6rem;">היסטוריית קריאות</div>
+      <div class="cust-tickets" id="custTickets"></div>
     </div>
-    <div class="sec-label" style="margin-bottom:0.6rem;">היסטוריית קריאות</div>
-    <div class="cust-tickets" id="custTickets"></div>
-    <div class="modal-actions" style="margin-top:1.25rem;">
+    <div class="modal-actions">
       <button class="mbtn-cancel" onclick="closeCustomer()">סגור</button>
     </div>
   </div>
@@ -1353,86 +1382,5 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 
-<!-- ===== ACCESSIBILITY WIDGET ===== -->
-<style>
-  #a11y-btn {
-    position: fixed; right: 16px; bottom: 24px; z-index: 9999;
-    width: 48px; height: 48px; border-radius: 50%;
-    background: var(--navy); color: #fff; border: none; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.28); font-size: 1.4rem;
-    display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s;
-  }
-  #a11y-btn:hover { transform: scale(1.1); }
-  #a11y-panel {
-    position: fixed; right: 16px; bottom: 82px; z-index: 9998;
-    width: 230px; background: #fff; border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.16); padding: 1rem;
-    direction: rtl; display: none; border: 1.5px solid var(--border);
-  }
-  #a11y-panel.open { display: block; }
-  #a11y-panel h3 { font-size: 0.78rem; font-weight: 800; color: var(--navy); margin-bottom: 0.7rem; text-align: center; text-transform: uppercase; }
-  .a11y-row { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9; }
-  .a11y-row:last-child { border-bottom: none; }
-  .a11y-label { font-size: 0.8rem; color: var(--text); }
-  .a11y-controls { display: flex; gap: 0.3rem; }
-  .a11y-togbtn { background: #f0f4f8; border: 1.5px solid var(--border); border-radius: 6px; padding: 0.22rem 0.5rem; font-size: 0.76rem; cursor: pointer; color: var(--navy); font-weight: 700; transition: all 0.15s; font-family: inherit; }
-  .a11y-togbtn:hover, .a11y-togbtn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
-  .a11y-reset { width: 100%; margin-top: 0.65rem; padding: 0.45rem; background: #f0f4f8; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.75rem; color: var(--muted); cursor: pointer; font-family: inherit; }
-  .a11y-reset:hover { background: var(--border); }
-  body.a11y-contrast { filter: contrast(1.5); }
-  body.a11y-large-text * { font-size: 115% !important; }
-  body.a11y-underline-links a { text-decoration: underline !important; }
-  body.a11y-no-anim *, body.a11y-no-anim *::before, body.a11y-no-anim *::after { animation: none !important; transition: none !important; }
-</style>
-<button id="a11y-btn" onclick="toggleA11y()" aria-label="נגישות" title="נגישות">♿</button>
-<div id="a11y-panel" role="dialog" aria-label="אפשרויות נגישות">
-  <h3>♿ נגישות</h3>
-  <div class="a11y-row">
-    <span class="a11y-label">גודל טקסט</span>
-    <div class="a11y-controls">
-      <button class="a11y-togbtn" onclick="admFontSize(-1)">A-</button>
-      <button class="a11y-togbtn" onclick="admFontSize(1)">A+</button>
-    </div>
-  </div>
-  <div class="a11y-row">
-    <span class="a11y-label">ניגודיות גבוהה</span>
-    <button class="a11y-togbtn" id="adm-tog-contrast" onclick="admToggle('contrast')">הפעל</button>
-  </div>
-  <div class="a11y-row">
-    <span class="a11y-label">הדגשת קישורים</span>
-    <button class="a11y-togbtn" id="adm-tog-underline-links" onclick="admToggle('underline-links')">הפעל</button>
-  </div>
-  <div class="a11y-row">
-    <span class="a11y-label">עצור אנימציות</span>
-    <button class="a11y-togbtn" id="adm-tog-no-anim" onclick="admToggle('no-anim')">הפעל</button>
-  </div>
-  <button class="a11y-reset" onclick="admResetA11y()">↺ איפוס</button>
-</div>
-<script>
-  let admFontScale = 0;
-  function toggleA11y() { document.getElementById('a11y-panel').classList.toggle('open'); }
-  document.addEventListener('click', e => {
-    const p = document.getElementById('a11y-panel'), b = document.getElementById('a11y-btn');
-    if (p.classList.contains('open') && !p.contains(e.target) && e.target !== b) p.classList.remove('open');
-  });
-  function admToggle(mode) {
-    const active = document.body.classList.toggle('a11y-' + mode);
-    const btn = document.getElementById('adm-tog-' + mode);
-    if (btn) { btn.textContent = active ? 'כבה' : 'הפעל'; btn.classList.toggle('active', active); }
-  }
-  function admFontSize(dir) {
-    admFontScale = Math.max(-2, Math.min(4, admFontScale + dir));
-    document.documentElement.style.fontSize = (16 + admFontScale * 2) + 'px';
-  }
-  function admResetA11y() {
-    ['contrast','underline-links','no-anim'].forEach(m => {
-      document.body.classList.remove('a11y-' + m);
-      const b = document.getElementById('adm-tog-' + m);
-      if (b) { b.textContent = 'הפעל'; b.classList.remove('active'); }
-    });
-    admFontScale = 0; document.documentElement.style.fontSize = '';
-  }
-</script>
 </body>
 </html>
