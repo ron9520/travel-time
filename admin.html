@@ -36,10 +36,23 @@
     }
     body { font-family: 'Segoe UI', system-ui, Arial, sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; }
 
+    /* ──────────────── SPLASH ──────────────── */
+    #splashScreen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, var(--sky) 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+      transition: opacity 0.35s;
+    }
+    #splashScreen.fade { opacity: 0; pointer-events: none; }
+    .splash-icon  { font-size: 3.5rem; animation: pulse 1.5s ease-in-out infinite; }
+    .splash-title { color: rgba(255,255,255,0.9); font-size: 1.1rem; font-weight: 700; letter-spacing: 0.05em; }
+    @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.75} }
+
     /* ──────────────── LOGIN ──────────────── */
     #loginScreen {
       min-height: 100vh;
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
       background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, var(--sky) 100%);
@@ -422,6 +435,12 @@
   </style>
 </head>
 <body>
+
+<!-- ══════════ SPLASH ══════════ -->
+<div id="splashScreen">
+  <div class="splash-icon">✈️</div>
+  <div class="splash-title">Travel Time</div>
+</div>
 
 <!-- ══════════ LOGIN ══════════ -->
 <div id="loginScreen">
@@ -1077,10 +1096,13 @@ function showToast(msg) {
 // ══════════════════════════════════════════
 //  PIN CODE
 // ══════════════════════════════════════════
-const PIN_KEY = 'tt_pin_v1';
-let pinBuffer    = '';
-let pinAttempts  = 0;
+const PIN_KEY      = 'tt_pin_v1';
+const PIN_ATT_KEY  = 'tt_pin_att';   // sessionStorage — resets on browser close
 const MAX_ATTEMPTS = 5;
+let pinBuffer = '';
+function getPinAttempts()  { return parseInt(sessionStorage.getItem(PIN_ATT_KEY) || '0'); }
+function setPinAttempts(n) { sessionStorage.setItem(PIN_ATT_KEY, n); }
+function resetPinAttempts(){ sessionStorage.removeItem(PIN_ATT_KEY); }
 
 // ── Hash PIN with Web Crypto ──
 async function hashPin(pin) {
@@ -1091,8 +1113,13 @@ async function hashPin(pin) {
 
 function storedPin() { try { return localStorage.getItem(PIN_KEY); } catch(e){ return null; } }
 
-// ── Show the right screen based on auth + PIN ──
+// ── Dismiss splash then show correct screen ──
 function routeScreen(user) {
+  // Fade out splash
+  const splash = document.getElementById('splashScreen');
+  splash.classList.add('fade');
+  setTimeout(() => { splash.style.display = 'none'; }, 360);
+
   hideAll();
   if (!user) {
     show('loginScreen');
@@ -1100,11 +1127,9 @@ function routeScreen(user) {
   }
   const pin = storedPin();
   if (!pin) {
-    // First login — set a PIN
     resetSetPin();
     show('setPinScreen');
   } else {
-    // PIN exists — show PIN screen
     resetPinInput();
     show('pinScreen');
   }
@@ -1118,9 +1143,7 @@ function hideAll() {
 }
 function show(id) {
   const el = document.getElementById(id);
-  if (!el) return;
-  // flex for pin/login screens, flex for app
-  el.style.display = (id === 'appScreen') ? 'flex' : 'flex';
+  if (el) el.style.display = 'flex';
 }
 
 // Override the original auth handler
@@ -1149,21 +1172,22 @@ function pinDel() {
 async function verifyPin() {
   const hash = await hashPin(pinBuffer);
   if (hash === storedPin()) {
-    pinAttempts = 0;
+    resetPinAttempts();
     hideAll();
     document.getElementById('appScreen').style.display = 'flex';
   } else {
-    pinAttempts++;
+    const attempts = getPinAttempts() + 1;
+    setPinAttempts(attempts);
     pinBuffer = '';
-    // Shake dots
     for (let i = 0; i < 4; i++) {
       const d = document.getElementById('pd' + i);
       d.classList.add('error');
       setTimeout(() => { d.classList.remove('error', 'filled'); }, 400);
     }
-    const left = MAX_ATTEMPTS - pinAttempts;
-    if (pinAttempts >= MAX_ATTEMPTS) {
+    const left = MAX_ATTEMPTS - attempts;
+    if (attempts >= MAX_ATTEMPTS) {
       document.getElementById('pinAttempts').textContent = 'יותר מדי ניסיונות — מתנתק...';
+      resetPinAttempts();
       setTimeout(() => { auth.signOut(); }, 1500);
     } else {
       document.getElementById('pinAttempts').textContent = `PIN שגוי — נותרו ${left} ניסיונות`;
@@ -1172,7 +1196,6 @@ async function verifyPin() {
 }
 function resetPinInput() {
   pinBuffer = '';
-  pinAttempts = 0;
   for (let i = 0; i < 4; i++) {
     const d = document.getElementById('pd' + i);
     if (d) d.className = 'pin-dot';
@@ -1249,18 +1272,95 @@ function updatePinDots(prefix, count) {
   }
 }
 
-// Override doLogout to clear PIN-session
-const _origLogout = doLogout;
-function doLogout() { auth.signOut(); }
+// doLogout is defined above — no override needed
 
-// ══════════════════════════════════════════
-//  PWA — Service Worker
-// ══════════════════════════════════════════
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
+</script>
+
+<!-- ===== ACCESSIBILITY WIDGET ===== -->
+<style>
+  #a11y-btn {
+    position: fixed; right: 16px; bottom: 24px; z-index: 9999;
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--navy); color: #fff; border: none; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.28); font-size: 1.4rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+  }
+  #a11y-btn:hover { transform: scale(1.1); }
+  #a11y-panel {
+    position: fixed; right: 16px; bottom: 82px; z-index: 9998;
+    width: 230px; background: #fff; border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.16); padding: 1rem;
+    direction: rtl; display: none; border: 1.5px solid var(--border);
+  }
+  #a11y-panel.open { display: block; }
+  #a11y-panel h3 { font-size: 0.78rem; font-weight: 800; color: var(--navy); margin-bottom: 0.7rem; text-align: center; text-transform: uppercase; }
+  .a11y-row { display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9; }
+  .a11y-row:last-child { border-bottom: none; }
+  .a11y-label { font-size: 0.8rem; color: var(--text); }
+  .a11y-controls { display: flex; gap: 0.3rem; }
+  .a11y-togbtn { background: #f0f4f8; border: 1.5px solid var(--border); border-radius: 6px; padding: 0.22rem 0.5rem; font-size: 0.76rem; cursor: pointer; color: var(--navy); font-weight: 700; transition: all 0.15s; font-family: inherit; }
+  .a11y-togbtn:hover, .a11y-togbtn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .a11y-reset { width: 100%; margin-top: 0.65rem; padding: 0.45rem; background: #f0f4f8; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.75rem; color: var(--muted); cursor: pointer; font-family: inherit; }
+  .a11y-reset:hover { background: var(--border); }
+  body.a11y-contrast { filter: contrast(1.5); }
+  body.a11y-large-text * { font-size: 115% !important; }
+  body.a11y-underline-links a { text-decoration: underline !important; }
+  body.a11y-no-anim *, body.a11y-no-anim *::before, body.a11y-no-anim *::after { animation: none !important; transition: none !important; }
+</style>
+<button id="a11y-btn" onclick="toggleA11y()" aria-label="נגישות" title="נגישות">♿</button>
+<div id="a11y-panel" role="dialog" aria-label="אפשרויות נגישות">
+  <h3>♿ נגישות</h3>
+  <div class="a11y-row">
+    <span class="a11y-label">גודל טקסט</span>
+    <div class="a11y-controls">
+      <button class="a11y-togbtn" onclick="admFontSize(-1)">A-</button>
+      <button class="a11y-togbtn" onclick="admFontSize(1)">A+</button>
+    </div>
+  </div>
+  <div class="a11y-row">
+    <span class="a11y-label">ניגודיות גבוהה</span>
+    <button class="a11y-togbtn" id="adm-tog-contrast" onclick="admToggle('contrast')">הפעל</button>
+  </div>
+  <div class="a11y-row">
+    <span class="a11y-label">הדגשת קישורים</span>
+    <button class="a11y-togbtn" id="adm-tog-underline-links" onclick="admToggle('underline-links')">הפעל</button>
+  </div>
+  <div class="a11y-row">
+    <span class="a11y-label">עצור אנימציות</span>
+    <button class="a11y-togbtn" id="adm-tog-no-anim" onclick="admToggle('no-anim')">הפעל</button>
+  </div>
+  <button class="a11y-reset" onclick="admResetA11y()">↺ איפוס</button>
+</div>
+<script>
+  let admFontScale = 0;
+  function toggleA11y() { document.getElementById('a11y-panel').classList.toggle('open'); }
+  document.addEventListener('click', e => {
+    const p = document.getElementById('a11y-panel'), b = document.getElementById('a11y-btn');
+    if (p.classList.contains('open') && !p.contains(e.target) && e.target !== b) p.classList.remove('open');
+  });
+  function admToggle(mode) {
+    const active = document.body.classList.toggle('a11y-' + mode);
+    const btn = document.getElementById('adm-tog-' + mode);
+    if (btn) { btn.textContent = active ? 'כבה' : 'הפעל'; btn.classList.toggle('active', active); }
+  }
+  function admFontSize(dir) {
+    admFontScale = Math.max(-2, Math.min(4, admFontScale + dir));
+    document.documentElement.style.fontSize = (16 + admFontScale * 2) + 'px';
+  }
+  function admResetA11y() {
+    ['contrast','underline-links','no-anim'].forEach(m => {
+      document.body.classList.remove('a11y-' + m);
+      const b = document.getElementById('adm-tog-' + m);
+      if (b) { b.textContent = 'הפעל'; b.classList.remove('active'); }
+    });
+    admFontScale = 0; document.documentElement.style.fontSize = '';
+  }
 </script>
 </body>
 </html>
