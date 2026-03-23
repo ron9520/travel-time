@@ -432,6 +432,78 @@
       white-space: nowrap;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ──────────────── MOBILE RESPONSIVE ──────────────── */
+    @media (max-width: 640px) {
+
+      /* Topbar — compact */
+      .topbar { padding: 0 1rem; height: 56px; }
+      .topbar-brand .t-sub { display: none; }
+      .search-wrap { display: none; }           /* hide search bar — use filter tabs */
+      .btn-logout { padding: 0.4rem 0.7rem; font-size: 0.75rem; }
+      .btn-add    { padding: 0.4rem 0.9rem; font-size: 0.82rem; }
+
+      /* Main padding */
+      .main { padding: 1rem; }
+
+      /* Stats — 2×2 grid */
+      .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; margin-bottom: 1.1rem; }
+      .stat-card  { padding: 0.9rem 1rem; gap: 0.7rem; }
+      .stat-icon  { font-size: 1.5rem; }
+      .stat-count { font-size: 1.6rem; }
+      .stat-label { font-size: 0.72rem; }
+
+      /* Filter tabs — horizontal scroll, no wrap */
+      .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.3rem; gap: 0.4rem;
+                    scrollbar-width: none; -ms-overflow-style: none; }
+      .filter-row::-webkit-scrollbar { display: none; }
+      .ftab { white-space: nowrap; flex-shrink: 0; font-size: 0.78rem; padding: 0.38rem 0.85rem; }
+
+      /* Table — card layout on mobile */
+      .table-card { border-radius: 10px; }
+      .table-head { padding: 0.85rem 1rem; }
+      table, thead, tbody, tr, td, th { display: block; }
+      thead { display: none; }                  /* hide column headers */
+      tbody tr {
+        background: white; border-radius: 10px; margin: 0;
+        padding: 0.85rem 1rem; border-bottom: 1px solid var(--border);
+        display: flex; flex-direction: column; gap: 0.3rem; cursor: pointer;
+      }
+      tbody tr:hover { background: #f8fafc; }
+      tbody td { padding: 0; border: none; font-size: 0.88rem; }
+      .td-arrow { display: none; }
+
+      /* Mobile card row: name + badge on same line */
+      tbody tr { position: relative; padding-left: 3rem; }
+      tbody td:last-child { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); }
+
+      /* Ticket panel — full width on mobile */
+      .ticket-panel { width: 100%; left: 0; right: 0; border-radius: 20px 20px 0 0;
+                      top: auto; bottom: 0; height: 92vh;
+                      transform: translateY(110%); }
+      .ticket-panel.open { transform: translateY(0); }
+      .status-btns { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+
+      /* Modals — full width */
+      .modal { width: 96vw; padding: 1.5rem 1.1rem; border-radius: 16px 16px 0 0;
+               position: fixed; bottom: 0; left: 0; right: 0; margin: 0;
+               max-height: 90vh; }
+      .modal-wrap { align-items: flex-end; }
+      .mg { grid-template-columns: 1fr; }
+
+      /* PIN screen — full screen friendly */
+      .pin-card { width: 92vw; padding: 1.8rem 1.2rem 1.5rem; }
+      .pin-key  { font-size: 1.2rem; }
+    }
+
+    /* Safe areas for iPhone notch / home indicator */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      .topbar { padding-top: env(safe-area-inset-top); height: calc(62px + env(safe-area-inset-top)); }
+      @media (max-width: 640px) {
+        .topbar { height: calc(56px + env(safe-area-inset-top)); }
+      }
+      #appScreen { padding-bottom: env(safe-area-inset-bottom); }
+    }
   </style>
 </head>
 <body>
