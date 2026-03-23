@@ -2,8 +2,15 @@
 <html dir="rtl" lang="he">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Travel Time — ניהול קריאות</title>
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a3560">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TT Admin">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -68,6 +75,68 @@
     .login-btn:hover { background: var(--blue); transform: translateY(-1px); }
     .login-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
     .login-error { color: #ef4444; font-size: 0.84rem; margin-bottom: 0.75rem; display: none; padding: 0.6rem; background: #fef2f2; border-radius: 8px; }
+
+    /* ──────────────── PIN SCREEN ──────────────── */
+    #pinScreen, #setPinScreen {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 60%, var(--sky) 100%);
+      padding-top: env(safe-area-inset-top);
+    }
+    .pin-card {
+      background: white; border-radius: 24px;
+      padding: 2.2rem 1.8rem 1.8rem;
+      width: 320px; max-width: 94vw;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+    .pin-logo  { font-size: 2.5rem; margin-bottom: 0.25rem; }
+    .pin-brand { font-size: 1.3rem; font-weight: 800; color: var(--navy); }
+    .pin-greeting { font-size: 0.88rem; color: var(--muted); margin: 0.25rem 0 1.5rem; }
+    .pin-label { font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem; }
+
+    /* dots */
+    .pin-dots { display: flex; justify-content: center; gap: 0.9rem; margin-bottom: 1.6rem; }
+    .pin-dot {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2.5px solid #cbd5e1; background: transparent;
+      transition: all 0.15s;
+    }
+    .pin-dot.filled { background: var(--navy); border-color: var(--navy); transform: scale(1.1); }
+    .pin-dot.error  { background: #ef4444; border-color: #ef4444; animation: shake 0.35s ease; }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-5px); }
+      60%      { transform: translateX(5px); }
+    }
+
+    /* numpad */
+    .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
+    .pin-key {
+      aspect-ratio: 1;
+      border: none; border-radius: 50%;
+      background: #f0f4f8; color: var(--navy);
+      font-size: 1.3rem; font-weight: 700;
+      cursor: pointer; transition: all 0.12s;
+      font-family: inherit; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .pin-key:hover  { background: #e2e8f0; transform: scale(1.05); }
+    .pin-key:active { background: var(--navy); color: white; transform: scale(0.95); }
+    .pin-key.del    { font-size: 1rem; background: #fef2f2; color: #ef4444; }
+    .pin-key.del:hover { background: #fee2e2; }
+    .pin-key.empty  { visibility: hidden; pointer-events: none; }
+
+    .pin-forgot {
+      margin-top: 1.2rem; font-size: 0.78rem; color: var(--muted);
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; text-decoration: underline;
+    }
+    .pin-forgot:hover { color: var(--navy); }
+    .pin-attempts { font-size: 0.75rem; color: #ef4444; margin-top: 0.5rem; min-height: 1rem; }
 
     /* ──────────────── APP SHELL ──────────────── */
     #appScreen { display: none; flex-direction: column; min-height: 100vh; }
@@ -367,6 +436,67 @@
   </div>
 </div>
 
+<!-- ══════════ PIN — כניסה ══════════ -->
+<div id="pinScreen" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a3560,#2563a8,#4a9fd4);padding-top:env(safe-area-inset-top);">
+  <div class="pin-card">
+    <div class="pin-logo">✈️</div>
+    <div class="pin-brand">Travel Time</div>
+    <div class="pin-greeting" id="pinGreeting">שלום! הכנס את ה-PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <div class="pin-key empty"></div>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="pin-attempts" id="pinAttempts"></div>
+    <button class="pin-forgot" onclick="forgotPin()">כניסה עם סיסמא</button>
+  </div>
+</div>
+
+<!-- ══════════ SET PIN — הגדרה ראשונה ══════════ -->
+<div id="setPinScreen" style="display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a3560,#2563a8,#4a9fd4);padding-top:env(safe-area-inset-top);">
+  <div class="pin-card">
+    <div class="pin-logo">🔑</div>
+    <div class="pin-brand">הגדר PIN</div>
+    <div class="pin-greeting" id="setPinLabel">בחר PIN בן 4 ספרות לכניסות הבאות</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="spd0"></div>
+      <div class="pin-dot" id="spd1"></div>
+      <div class="pin-dot" id="spd2"></div>
+      <div class="pin-dot" id="spd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="setPinKey('1')">1</button>
+      <button class="pin-key" onclick="setPinKey('2')">2</button>
+      <button class="pin-key" onclick="setPinKey('3')">3</button>
+      <button class="pin-key" onclick="setPinKey('4')">4</button>
+      <button class="pin-key" onclick="setPinKey('5')">5</button>
+      <button class="pin-key" onclick="setPinKey('6')">6</button>
+      <button class="pin-key" onclick="setPinKey('7')">7</button>
+      <button class="pin-key" onclick="setPinKey('8')">8</button>
+      <button class="pin-key" onclick="setPinKey('9')">9</button>
+      <div class="pin-key empty"></div>
+      <button class="pin-key" onclick="setPinKey('0')">0</button>
+      <button class="pin-key del" onclick="setPinDel()">⌫</button>
+    </div>
+    <button class="pin-forgot" onclick="skipPin()">דלג — כניסה רגילה בפעם הבאה</button>
+  </div>
+</div>
+
 <!-- ══════════ APP ══════════ -->
 <div id="appScreen">
 
@@ -608,17 +738,7 @@ let unsubTickets   = null;
 // ══════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════
-auth.onAuthStateChanged(user => {
-  if (user) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display  = 'flex';
-    subscribeTickets();
-  } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('appScreen').style.display  = 'none';
-    if (unsubTickets) { unsubTickets(); unsubTickets = null; }
-  }
-});
+// Auth routing handled by routeScreen() below (PIN flow)
 
 function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
@@ -952,6 +1072,194 @@ function showToast(msg) {
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ══════════════════════════════════════════
+//  PIN CODE
+// ══════════════════════════════════════════
+const PIN_KEY = 'tt_pin_v1';
+let pinBuffer    = '';
+let pinAttempts  = 0;
+const MAX_ATTEMPTS = 5;
+
+// ── Hash PIN with Web Crypto ──
+async function hashPin(pin) {
+  const data = new TextEncoder().encode(pin + 'tt-travel-2024');
+  const buf  = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function storedPin() { try { return localStorage.getItem(PIN_KEY); } catch(e){ return null; } }
+
+// ── Show the right screen based on auth + PIN ──
+function routeScreen(user) {
+  hideAll();
+  if (!user) {
+    show('loginScreen');
+    return;
+  }
+  const pin = storedPin();
+  if (!pin) {
+    // First login — set a PIN
+    resetSetPin();
+    show('setPinScreen');
+  } else {
+    // PIN exists — show PIN screen
+    resetPinInput();
+    show('pinScreen');
+  }
+}
+
+function hideAll() {
+  ['loginScreen','pinScreen','setPinScreen','appScreen'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+function show(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // flex for pin/login screens, flex for app
+  el.style.display = (id === 'appScreen') ? 'flex' : 'flex';
+}
+
+// Override the original auth handler
+auth.onAuthStateChanged(user => {
+  if (user) {
+    // Pre-subscribe tickets even before PIN so data loads in background
+    if (!unsubTickets) subscribeTickets();
+  } else {
+    if (unsubTickets) { unsubTickets(); unsubTickets = null; }
+  }
+  routeScreen(user);
+});
+
+// ── PIN input ──
+function pinKey(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots('pd', pinBuffer.length);
+  if (pinBuffer.length === 4) setTimeout(verifyPin, 120);
+}
+function pinDel() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots('pd', pinBuffer.length);
+  document.getElementById('pinAttempts').textContent = '';
+}
+async function verifyPin() {
+  const hash = await hashPin(pinBuffer);
+  if (hash === storedPin()) {
+    pinAttempts = 0;
+    hideAll();
+    document.getElementById('appScreen').style.display = 'flex';
+  } else {
+    pinAttempts++;
+    pinBuffer = '';
+    // Shake dots
+    for (let i = 0; i < 4; i++) {
+      const d = document.getElementById('pd' + i);
+      d.classList.add('error');
+      setTimeout(() => { d.classList.remove('error', 'filled'); }, 400);
+    }
+    const left = MAX_ATTEMPTS - pinAttempts;
+    if (pinAttempts >= MAX_ATTEMPTS) {
+      document.getElementById('pinAttempts').textContent = 'יותר מדי ניסיונות — מתנתק...';
+      setTimeout(() => { auth.signOut(); }, 1500);
+    } else {
+      document.getElementById('pinAttempts').textContent = `PIN שגוי — נותרו ${left} ניסיונות`;
+    }
+  }
+}
+function resetPinInput() {
+  pinBuffer = '';
+  pinAttempts = 0;
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('pd' + i);
+    if (d) d.className = 'pin-dot';
+  }
+  document.getElementById('pinAttempts').textContent = '';
+}
+function forgotPin() {
+  // Clear PIN and go back to full login
+  try { localStorage.removeItem(PIN_KEY); } catch(e){}
+  auth.signOut();
+}
+
+// ── Set PIN ──
+let setPinBuffer  = '';
+let setPinFirst   = '';
+let setPinPhase   = 1; // 1=enter, 2=confirm
+
+function resetSetPin() {
+  setPinBuffer = ''; setPinFirst = ''; setPinPhase = 1;
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById('spd' + i);
+    if (d) d.className = 'pin-dot';
+  }
+  document.getElementById('setPinLabel').textContent = 'בחר PIN בן 4 ספרות לכניסות הבאות';
+}
+function setPinKey(digit) {
+  if (setPinBuffer.length >= 4) return;
+  setPinBuffer += digit;
+  updatePinDots('spd', setPinBuffer.length);
+  if (setPinBuffer.length === 4) setTimeout(setPinNext, 120);
+}
+function setPinDel() {
+  setPinBuffer = setPinBuffer.slice(0, -1);
+  updatePinDots('spd', setPinBuffer.length);
+}
+async function setPinNext() {
+  if (setPinPhase === 1) {
+    setPinFirst  = setPinBuffer;
+    setPinBuffer = '';
+    setPinPhase  = 2;
+    for (let i = 0; i < 4; i++) document.getElementById('spd' + i).className = 'pin-dot';
+    document.getElementById('setPinLabel').textContent = 'אשר את ה-PIN';
+  } else {
+    if (setPinBuffer === setPinFirst) {
+      const hash = await hashPin(setPinBuffer);
+      try { localStorage.setItem(PIN_KEY, hash); } catch(e){}
+      hideAll();
+      document.getElementById('appScreen').style.display = 'flex';
+      showToast('PIN הוגדר בהצלחה ✓');
+    } else {
+      // Mismatch — shake and restart
+      for (let i = 0; i < 4; i++) {
+        const d = document.getElementById('spd' + i);
+        d.classList.add('error');
+        setTimeout(() => { d.classList.remove('error','filled'); }, 400);
+      }
+      setTimeout(() => {
+        setPinBuffer = ''; setPinFirst = ''; setPinPhase = 1;
+        document.getElementById('setPinLabel').textContent = 'PINים לא תואמים, נסה שוב';
+      }, 450);
+    }
+  }
+}
+function skipPin() {
+  // Skip PIN — go straight to app, no PIN stored
+  hideAll();
+  document.getElementById('appScreen').style.display = 'flex';
+}
+
+function updatePinDots(prefix, count) {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById(prefix + i);
+    if (d) d.className = 'pin-dot' + (i < count ? ' filled' : '');
+  }
+}
+
+// Override doLogout to clear PIN-session
+const _origLogout = doLogout;
+function doLogout() { auth.signOut(); }
+
+// ══════════════════════════════════════════
+//  PWA — Service Worker
+// ══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 </script>
 </body>
