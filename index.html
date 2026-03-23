@@ -909,7 +909,7 @@
   });
   const db = firebase.firestore();
 
-  // Form submission handler – Web3Forms + Firestore
+  // Form submission handler – Firestore first, then Web3Forms email (best-effort)
   async function submitForm(e) {
     e.preventDefault();
     const name    = document.getElementById('name').value.trim();
@@ -927,58 +927,53 @@
     btn.disabled = true;
     btn.textContent = 'שולח...';
 
+    let ticketNumber = '0001';
+
     try {
-      // 1) Send email via Web3Forms
-      const response = await fetch('https://api.web3forms.com/submit', {
+      // 1) Save to Firestore CRM — primary action, must succeed
+      const counterRef = db.collection('counters').doc('tickets');
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(counterRef);
+        const n = (doc.exists ? (doc.data().lastNumber || 0) : 0) + 1;
+        ticketNumber = String(n).padStart(4, '0');
+        tx.set(counterRef, { lastNumber: n });
+      });
+      await db.collection('tickets').add({
+        name, phone, ticketNumber,
+        destination: dest || 'לא צוין',
+        timing: timing || 'לא צוין',
+        message: message || 'אין',
+        status: 'new',
+        source: 'form',
+        notes: [],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      // Show success immediately after Firestore write
+      const tnEl = document.getElementById('successTicketNum');
+      if (tnEl) tnEl.textContent = '#' + ticketNumber;
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('formSuccess').style.display = 'block';
+
+      // 2) Send email via Web3Forms — best-effort, does not affect UX
+      fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
           access_key: 'b3ae9dff-c6f1-4096-9397-da230d0ffe9d',
-          subject: `בקשת חזרה מ-${name} – Travel Time`,
+          subject: `בקשת חזרה מ-${name} (#${ticketNumber}) – Travel Time`,
           from_name: 'Travel Time Website',
           name, phone,
+          ticket_number: '#' + ticketNumber,
           destination: dest || 'לא צוין',
           timing: timing || 'לא צוין',
           message: message || 'אין'
         })
-      });
+      }).catch(err => console.warn('Web3Forms email failed (non-critical):', err));
 
-      const data = await response.json();
-      if (data.success) {
-        // 2) Save to Firestore CRM with auto ticket number
-        try {
-          const counterRef = db.collection('counters').doc('tickets');
-          let ticketNumber = '0001';
-          await db.runTransaction(async (tx) => {
-            const doc = await tx.get(counterRef);
-            const n = (doc.exists ? (doc.data().lastNumber || 0) : 0) + 1;
-            ticketNumber = String(n).padStart(4, '0');
-            tx.set(counterRef, { lastNumber: n });
-          });
-          await db.collection('tickets').add({
-            name, phone, ticketNumber,
-            destination: dest || 'לא צוין',
-            timing: timing || 'לא צוין',
-            message: message || 'אין',
-            status: 'new',
-            source: 'form',
-            notes: [],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          // Show ticket number in success message if element exists
-          const tnEl = document.getElementById('successTicketNum');
-          if (tnEl) tnEl.textContent = '#' + ticketNumber;
-        } catch(fbErr) { console.warn('Firestore write failed:', fbErr); }
-
-        document.getElementById('contactForm').style.display = 'none';
-        document.getElementById('formSuccess').style.display = 'block';
-      } else {
-        alert(data.message || 'שגיאה בשליחה. נסה שוב או התקשר ישירות.');
-        btn.disabled = false;
-        btn.textContent = 'שלח בקשה לחזרה ✈️';
-      }
     } catch (err) {
-      alert('שגיאת רשת. בדוק את החיבור ונסה שוב.');
+      console.error('Form submission error:', err);
+      alert('שגיאה בשמירת הבקשה. בדוק את החיבור ונסה שוב.');
       btn.disabled = false;
       btn.textContent = 'שלח בקשה לחזרה ✈️';
     }

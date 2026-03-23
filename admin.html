@@ -201,6 +201,75 @@
     }
     .btn-logout:hover { background: rgba(255,255,255,0.2); }
 
+    /* BELL NOTIFICATION */
+    .bell-wrap { position: relative; }
+    .btn-bell {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+      color: white; font-size: 1.15rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; position: relative;
+    }
+    .btn-bell:hover { background: rgba(255,255,255,0.24); }
+    .btn-bell.has-notif { animation: bell-ring 0.6s ease; }
+    @keyframes bell-ring {
+      0%,100%{transform:rotate(0)} 20%{transform:rotate(-15deg)} 40%{transform:rotate(15deg)} 60%{transform:rotate(-8deg)} 80%{transform:rotate(8deg)}
+    }
+    .bell-badge {
+      position: absolute; top: -4px; left: -4px;
+      background: #ef4444; color: white;
+      border-radius: 50%; min-width: 18px; height: 18px;
+      font-size: 0.65rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1; padding: 0 3px;
+      border: 2px solid var(--navy);
+      display: none;
+    }
+    .bell-badge.show { display: flex; }
+    .notif-dropdown {
+      position: absolute; top: calc(100% + 10px); left: 50%;
+      transform: translateX(-50%);
+      background: white; border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      width: 290px; max-height: 340px;
+      overflow-y: auto; z-index: 9000;
+      display: none; direction: rtl;
+    }
+    .notif-dropdown.open { display: block; }
+    .notif-header {
+      padding: 0.8rem 1rem 0.6rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .notif-header-title { font-weight: 700; font-size: 0.85rem; color: var(--navy); }
+    .notif-clear-btn {
+      font-size: 0.72rem; color: var(--muted); background: none;
+      border: none; cursor: pointer; padding: 0.2rem 0.4rem;
+      border-radius: 6px; transition: background 0.15s;
+    }
+    .notif-clear-btn:hover { background: var(--bg); color: var(--blue); }
+    .notif-empty { padding: 1.5rem 1rem; text-align: center; color: var(--muted); font-size: 0.83rem; }
+    .notif-item {
+      padding: 0.75rem 1rem; display: flex; align-items: flex-start;
+      gap: 0.65rem; cursor: pointer; border-bottom: 1px solid #f1f5f9;
+      transition: background 0.12s;
+    }
+    .notif-item:hover { background: var(--bg); }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); margin-top: 5px; flex-shrink: 0; }
+    .notif-text { font-size: 0.82rem; color: var(--text); line-height: 1.45; }
+    .notif-time { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+
+    /* REFRESH BUTTON */
+    .btn-refresh {
+      padding: 0.28rem 0.55rem; background: none;
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--muted); font-size: 0.95rem; cursor: pointer;
+      transition: all 0.2s; line-height: 1;
+    }
+    .btn-refresh:hover { background: var(--bg); color: var(--blue); border-color: var(--blue); }
+    .btn-refresh.spinning { animation: spin 0.6s linear; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* MAIN */
     .main { padding: 1.75rem 1.75rem; flex: 1; }
 
@@ -830,6 +899,20 @@
         <input class="search-input" type="text" id="searchInput" placeholder="חיפוש לפי שם, מספר קריאה או טלפון..." oninput="onSearch(this.value)" />
       </div>
       <button class="btn-search-toggle" id="btnSearchToggle" onclick="toggleMobileSearch()" title="חיפוש">🔍</button>
+      <!-- Bell notification -->
+      <div class="bell-wrap">
+        <button class="btn-bell" id="btnBell" onclick="toggleBell()" title="התראות">
+          🔔
+          <span class="bell-badge" id="bellBadge"></span>
+        </button>
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header">
+            <span class="notif-header-title">התראות</span>
+            <button class="notif-clear-btn" onclick="clearNotifications()">נקה הכל</button>
+          </div>
+          <div id="notifList"><div class="notif-empty">אין התראות חדשות</div></div>
+        </div>
+      </div>
       <button class="btn-add" onclick="openAddModal()">➕ קריאה חדשה</button>
       <button class="btn-logout" onclick="doLogout()">יציאה</button>
     </div>
@@ -892,7 +975,10 @@
     <!-- TABLE -->
     <div class="table-card">
       <div class="table-head">
-        <div class="table-head-title">קריאות</div>
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <div class="table-head-title">קריאות</div>
+          <button class="btn-refresh" id="btnRefresh" onclick="refreshTickets()" title="רענן">↻</button>
+        </div>
         <div class="table-head-meta" id="tableMeta">טוען...</div>
       </div>
       <div id="tableBody"></div>
@@ -1143,6 +1229,74 @@ document.getElementById('loginPass').addEventListener('keydown', e => {
 });
 
 // ══════════════════════════════════════════
+//  BELL NOTIFICATIONS
+// ══════════════════════════════════════════
+let notifications     = [];   // { id, ticketId, ticketNumber, name, ts }
+let knownTicketIds    = null; // null = first load (don't fire notifs yet)
+let bellOpen          = false;
+
+function toggleBell() {
+  bellOpen = !bellOpen;
+  document.getElementById('notifDropdown').classList.toggle('open', bellOpen);
+  if (bellOpen) {
+    // mark as read — clear badge
+    document.getElementById('bellBadge').classList.remove('show');
+    document.getElementById('btnBell').classList.remove('has-notif');
+    renderNotifList();
+    // close on outside click
+    setTimeout(() => document.addEventListener('click', closeBellOutside, { once: true }), 10);
+  }
+}
+function closeBellOutside(e) {
+  if (!document.getElementById('notifDropdown').contains(e.target) &&
+      e.target !== document.getElementById('btnBell')) {
+    bellOpen = false;
+    document.getElementById('notifDropdown').classList.remove('open');
+  }
+}
+function clearNotifications() {
+  notifications = [];
+  renderNotifList();
+  document.getElementById('bellBadge').classList.remove('show');
+  document.getElementById('btnBell').classList.remove('has-notif');
+}
+function renderNotifList() {
+  const el = document.getElementById('notifList');
+  if (notifications.length === 0) {
+    el.innerHTML = '<div class="notif-empty">אין התראות חדשות</div>';
+    return;
+  }
+  el.innerHTML = notifications.slice().reverse().map(n => `
+    <div class="notif-item" onclick="bellOpen=false;document.getElementById('notifDropdown').classList.remove('open');openTicket('${n.ticketId}')">
+      <div class="notif-dot"></div>
+      <div>
+        <div class="notif-text">נפתחה קריאה חדשה <strong>#${esc(n.ticketNumber || '?')}</strong> — ${esc(n.name)}</div>
+        <div class="notif-time">${formatTs(n.ts)}</div>
+      </div>
+    </div>`).join('');
+}
+function addNotification(ticket) {
+  notifications.push({
+    id:           Date.now() + '_' + ticket.id,
+    ticketId:     ticket.id,
+    ticketNumber: ticket.ticketNumber || '?',
+    name:         ticket.name || '—',
+    ts:           Date.now()
+  });
+  if (!bellOpen) {
+    const badge = document.getElementById('bellBadge');
+    const btn   = document.getElementById('btnBell');
+    badge.textContent = notifications.length > 9 ? '9+' : notifications.length;
+    badge.classList.add('show');
+    btn.classList.add('has-notif');
+    // re-trigger animation each time
+    btn.style.animation = 'none';
+    requestAnimationFrame(() => { btn.style.animation = ''; });
+  }
+  renderNotifList();
+}
+
+// ══════════════════════════════════════════
 //  FIRESTORE — REAL-TIME LISTENER
 // ══════════════════════════════════════════
 function subscribeTickets() {
@@ -1150,12 +1304,41 @@ function subscribeTickets() {
   unsubTickets = db.collection('tickets')
     .orderBy('createdAt', 'desc')
     .onSnapshot(snap => {
-      tickets = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const incoming = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      if (knownTicketIds === null) {
+        // First load — seed known IDs, no notifications
+        knownTicketIds = new Set(incoming.map(t => t.id));
+      } else {
+        // Subsequent updates — detect genuinely new tickets
+        incoming.forEach(t => {
+          if (!knownTicketIds.has(t.id) && t.status !== 'deleted') {
+            addNotification(t);
+          }
+          knownTicketIds.add(t.id);
+        });
+      }
+
+      tickets = incoming;
       renderAll();
     }, err => {
       console.error(err);
       document.getElementById('tableBody').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">שגיאה בטעינת הנתונים</div></div>';
     });
+}
+
+// ══════════════════════════════════════════
+//  REFRESH
+// ══════════════════════════════════════════
+function refreshTickets() {
+  const btn = document.getElementById('btnRefresh');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  setTimeout(() => { btn.classList.remove('spinning'); btn.disabled = false; }, 650);
+  // Unsubscribe and re-subscribe to force a fresh pull
+  if (unsubTickets) { unsubTickets(); unsubTickets = null; }
+  knownTicketIds = null; // reset so first load doesn't trigger notifications
+  subscribeTickets();
 }
 
 // ══════════════════════════════════════════
@@ -1419,7 +1602,8 @@ async function addNote() {
   const input = document.getElementById('noteInput');
   const text  = input.value.trim();
   if (!text) return;
-  const note = { text, ts: Date.now(), id: Date.now().toString() };
+  const noteId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+  const note = { text, ts: Date.now(), id: noteId };
   const existingNotes = currentTicket.notes || [];
   try {
     await db.collection('tickets').doc(currentTicket.id).update({
@@ -1430,9 +1614,21 @@ async function addNote() {
   } catch(e) { showToast('שגיאה בשמירת הערה'); }
 }
 
+// Safe file opener — only allow Firebase Storage URLs
+function openFile(url) {
+  if (!url || typeof url !== 'string') return;
+  if (!url.startsWith('https://firebasestorage.googleapis.com/')) {
+    console.warn('Blocked unsafe file URL:', url);
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+
 function callClient() {
   if (!currentTicket || !currentTicket.phone) return;
-  window.open('tel:' + currentTicket.phone);
+  const phoneClean = currentTicket.phone.replace(/[^0-9+]/g, '');
+  if (!phoneClean) return;
+  window.open('tel:' + phoneClean);
 }
 function waClient() {
   if (!currentTicket || !currentTicket.phone) return;
@@ -1634,7 +1830,7 @@ function renderFiles(files) {
         <div class="fi-meta">${fileSize(f.size)} · ${formatTs(f.uploadedAt)}</div>
       </div>
       <div class="fi-actions">
-        <button class="fi-btn" onclick="window.open('${f.url}','_blank')">פתח</button>
+        <button class="fi-btn" onclick="openFile('${f.url}')">פתח</button>
         <button class="fi-btn del" onclick="deleteFile(${idx})">מחק</button>
       </div>
     </div>`;
